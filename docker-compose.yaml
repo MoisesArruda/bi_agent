@@ -1,0 +1,34 @@
+# podman-compose build 
+version: '3.8'
+
+services:
+  # Serviço da sua aplicação backend
+  backend:
+    # Construa a imagem a partir do Dockerfile na pasta atual
+    build: .
+    # Mapeia a porta do container para a porta do host
+    ports:
+      - "8000:8000"
+    # Define variáveis de ambiente
+    environment:
+      # O nome do host do Redis é o nome do serviço
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+    # Garante que o backend só inicie após o Redis
+    depends_on:
+      - redis
+
+  # Serviço do Redis
+  redis:
+    # Usa a imagem oficial do Redis
+    image: "redis:latest"
+    # Mapeia a porta do container para a porta do host
+    ports:
+      - "6379:6379"
+    # Usa um volume para persistir os dados do Redis (opcional)
+    volumes:
+      - redis-data:/data
+
+# Define o volume para persistência de dados
+volumes:
+  redis-data:
