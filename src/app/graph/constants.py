@@ -37,6 +37,10 @@ class SQLQueryResponse(BaseModel):
     explain: str = Field(description="The explanation of the query with how columns were used and the logic of the query")
     query: str = Field(description="The SQL query ready to be executed")
 
+class ReactAgentResponse(BaseModel):
+    response: str = Field(description="Resposta final clara e direta para o usuário, em Português-Brasileiro.")
+    link_sources: str = Field(description="Breve resumo das fontes utilizadas, incluindo links ou deixe vazio caso não tenha usado fontes externas.")
+
 class AgentBiExpertResponse(BaseModel):
     response: str = Field(description="The response to the text, chart or table to be generated in Portuguese-Brazilian")
     next_step: str = Field(description="The next step to be executed or END")

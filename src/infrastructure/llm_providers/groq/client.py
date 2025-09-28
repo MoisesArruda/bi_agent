@@ -26,14 +26,14 @@ class GroqChatHandler:
         return response
 
 if __name__ == "__main__":
-
+    # python -m src.infrastructure.llm_providers.groq.client
     groq_client = GroqChatHandler()
 
     models = groq_client.list_models()
     print(models)
 
-    invoke_model = groq_client.get_model(models[0])
-    print(invoke_model)
+    # invoke_model = groq_client.get_model("openai/gpt-oss-120b")
+    # print(invoke_model)
 
-    response = groq_client.send_message("Olá. Com qual modelo estou conversando?")
-    print(response)
+    # response = groq_client.send_message("Olá. Com qual modelo estou conversando?")
+    # print(response)

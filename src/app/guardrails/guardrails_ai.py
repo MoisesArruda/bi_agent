@@ -195,7 +195,6 @@ class SemanticTopicValidator(Validator):
 
 
 if __name__ == "__main__":
-
-    # Testando validate_query_comands
+    # python -m src.app.guardrails.guardrails_ai
     response = validate_query_commands("delete * from employees;")  # Validator passes
     print(response)

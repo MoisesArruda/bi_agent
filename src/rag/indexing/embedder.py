@@ -26,7 +26,7 @@ class DocumentEmbedder:
                 doc_with_embedding = {
                     "page_content": doc["page_content"],
                     "metadata": {
-                        **doc["metadata"],
+                        **(doc.get("metadata", {})),
                         "embedding": embedding,
                         "embedding_model": self.model_name
                     }
@@ -58,7 +58,7 @@ class DocumentEmbedder:
 
 # Funções de conveniência
 def embed_documents_simple(documents: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
-    """Função simples para gerar embeddings."""
+    """Função simples para gerar embeddings para uma lista de documentos."""
     embedder = DocumentEmbedder()
     return embedder.embed_documents(documents)
 
@@ -66,3 +66,14 @@ def embed_query_simple(query: str) -> List[float]:
     """Função simples para gerar embedding de consulta."""
     embedder = DocumentEmbedder()
     return embedder.embed_query(query)
+
+if __name__ == "__main__":
+    # python -m src.rag.indexing.embedder
+    
+    documents = [{"page_content": "Olá, tudo bem?"}]
+    embedded_docs = embed_documents_simple(documents)
+    # print(embedded_docs)
+
+    query = "Quais são as últimas novidades da netflix?"
+    embedding = embed_query_simple(query)
+    print(embedding)

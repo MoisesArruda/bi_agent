@@ -9,13 +9,13 @@ load_dotenv()
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
-sidebar_image = os.path.join(os.path.dirname(__file__), "img", 'GrupoUnimetal.png')
+sidebar_image = os.path.join(os.path.dirname(__file__), "img", 'ArrudaConsulting.jpeg')
 
-def page_config(layout: str = "wide", initial_sidebar_state: str = "auto"):
+def page_config(layout: str = "wide", initial_sidebar_state: str = "auto", page_title: str = "AI Agent Arruda Consulting", page_icon: str = sidebar_image):
 
     st.set_page_config(
-        page_title="AI Agent Unimetal",
-        page_icon=sidebar_image,
+        page_title=page_title,
+        page_icon=page_icon,
         layout=layout,
         initial_sidebar_state=initial_sidebar_state,        
     )
@@ -41,8 +41,35 @@ def side_navbar():
         """A GUIA é uma aplicação que utiliza inteligência artificial e que foi desenvolvida para 
                     auxiliar na geração e revisão de dados e tabelas. """
     )
-    
+
+
+def side_navbar_with_button():
+    """
+    Configura a barra lateral da aplicação Streamlit.
+    Esta função adiciona:
+    - Título da barra lateral
+    - Informações sobre a AInvest
+    - Diretrizes de uso
+    - Avisos importantes sobre o monitoramento
+
+    Returns:
+    None
+    """
+
+    st.sidebar.image(image=sidebar_image, width=250, use_container_width=False)
+    st.sidebar.markdown("---")
+
+    st.sidebar.title("Informações")
+    st.sidebar.info(
+        """A GUIA é uma aplicação que utiliza inteligência artificial e que foi desenvolvida para 
+                    auxiliar na geração e revisão de dados e tabelas. """
+    )
     st.sidebar.markdown("<div style='margin-top: 50px;'></div>", unsafe_allow_html=True)
+
+    if st.sidebar.button(icon="🗑️", label="Limpar histórico", use_container_width=True):
+        st.session_state.messages = [
+            {"role": "assistant", "content": "Olá! Sou a GUIA, sua assistente para análise de dados. Como posso te ajudar hoje?"}
+        ]
 
 # Esconde o MultiPages
 def hide_navigation_sidebar() -> None:

@@ -1,5 +1,7 @@
 # BI Agent
 
+TAVILLI APY KEY - https://app.tavily.com/home
+
 ## Estrutura do Projeto
 
 ```

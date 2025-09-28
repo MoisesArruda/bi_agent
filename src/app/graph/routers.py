@@ -7,14 +7,6 @@ def route_supervisor(state: AgentState) -> AgentState:
     else:
         return END
 
-def route_with_cache(state: AgentState) -> AgentState:
-    # if state["messages"][-1].content == "Resposta não encontrada na cache":
-    if state["next_step"] == "Agent_SQL_Validator":
-        return "Agent_SQL_Validator"
-    else:
-        return "Agent_SQL_Writer"
-
-
 def route_search_tables_and_schemas(state: AgentState) -> AgentState:
     if state["next_step"] == "redis_with_cache":
         # state["database_error"] = 1
@@ -22,6 +14,12 @@ def route_search_tables_and_schemas(state: AgentState) -> AgentState:
     else:
         return END
 
+def route_with_cache(state: AgentState) -> AgentState:
+    # if state["messages"][-1].content == "Resposta não encontrada na cache":
+    if state["next_step"] == "Agent_SQL_Validator":
+        return "Agent_SQL_Validator"
+    else:
+        return "Agent_SQL_Writer"
 
 def route_sql_validator(state: AgentState) -> str:
     """
@@ -55,3 +53,12 @@ def route_python_validator(state: AgentState) -> str:
         return "Supervisor_Agent"
     else:
         return "Agent_Python_Generator"
+
+def route_agent_tools(state: AgentState) -> AgentState:
+    """
+    Determina se deve continuar para o próximo nó ou responder o usuário
+    """
+    if state['next_step'] == 'agent_tools':
+        return 'Agent_Tools'
+    else:
+        return END

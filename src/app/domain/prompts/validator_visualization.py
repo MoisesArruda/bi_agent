@@ -1,4 +1,4 @@
-system_prompt_agent_python_code_data_visualization_validator_node = """
+system_prompt_agent_python_code_data_visualization_validator = """
 <Role>
 Agente especialista em correção de código de visualização de dados Python, especializado em Plotly e visualização Python.
 </Role>

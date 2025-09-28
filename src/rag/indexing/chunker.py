@@ -1,4 +1,4 @@
-from langchain.document_loaders import PyPDFLoader
+from langchain_community.document_loaders import PyPDFLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from typing import List, Dict, Any
 import logging
@@ -110,3 +110,13 @@ def create_text_chunks(text: str, chunk_size: int = 1000, chunk_overlap: int = 2
     """Função simples para criar chunks de texto."""
     chunker = DocumentChunker(chunk_size, chunk_overlap)
     return chunker.create_simple_chunks(text)
+
+if __name__ == "__main__":
+    # python -m src.rag.indexing.chunker
+
+    pdf_path = "data/pdf/Visão de longo prazo Netflix.pdf"
+    chunks = load_and_chunk_pdf(pdf_path)
+    # print(chunks)
+
+    page = create_text_chunks(chunks[0]["page_content"])
+    print(page)

@@ -7,8 +7,8 @@ logger = logging.getLogger(__name__)
 class DocumentProcessor:
     """Processador de documentos para RAG."""
     
-    def __init__(self, chunk_size: int = 1000, chunk_overlap: int = 200):
-        self.chunker = DocumentChunker(chunk_size, chunk_overlap)
+    def __init__(self, chunker: DocumentChunker):
+        self.chunker = chunker
     
     def process_pdf(self, pdf_path: str, source_name: Optional[str] = None) -> List[Dict[str, Any]]:
         """Processa um PDF completo."""
@@ -54,10 +54,21 @@ class DocumentProcessor:
         except Exception as e:
             logger.error(f"Erro ao processar texto: {e}")
             raise
-    
 
-# Funções de conveniência
+# Funções de conveniência CORRIGIDAS
 def process_pdf(pdf_path: str) -> List[Dict[str, Any]]:
-    """Processa um  PDF."""
-    processor = DocumentProcessor()
+    """Processa um PDF."""
+    chunker = DocumentChunker()  # ✅ Criar chunker primeiro
+    processor = DocumentProcessor(chunker)  # ✅ Passar chunker como argumento
     return processor.process_pdf(pdf_path)
+
+def process_document(pdf_path: str) -> List[Dict[str, Any]]:
+    """Processa um documento (alias para process_pdf)."""
+    return process_pdf(pdf_path)
+
+if __name__ == "__main__":
+    # python -m src.rag.indexing.document_processor
+
+    pdf_path = "data/pdf/Visão de longo prazo Netflix.pdf"
+    documents = process_document(pdf_path)
+    print(documents)
