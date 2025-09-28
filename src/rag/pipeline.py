@@ -81,8 +81,8 @@ if __name__ == "__main__":
     pipeline_faiss.index_documents(pdf_path)
     # pipeline_qdrant.index_documents(pdf_path)
 
-    result = pipeline_faiss.query("Qual é a visão de longo prazo da Netflix?")
-    print(result)
+    print(pipeline_faiss.query("Qual é a visão de longo prazo da Netflix?"))
+    # print(result)
 
     # result_qdrant = pipeline_qdrant.query("Qual é a visão de longo prazo da Netflix?")
     # print(result_qdrant)

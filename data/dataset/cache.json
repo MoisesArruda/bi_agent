@@ -1,0 +1,16 @@
+[
+    {
+        "id": "1",
+        "quesiton": "Um gráfico de linhas mostrando o número de filmes lançados por ano",
+        "explicacao_query": "A consulta conta quantos títulos do tipo 'Movie' foram lançados em cada ano (coluna release_year). Ela filtra apenas registros onde type = 'Movie', agrupa pelos anos de lançamento e ordena o resultado cronologicamente, facilitando a criação de um gráfico de linhas com o número de filmes por ano.",
+        "query": "SELECT release_year AS year, COUNT(*) AS movies_count FROM netflix.netflix WHERE type = 'Movie' GROUP BY release_year ORDER BY release_year",
+        "visualizacao": "import pandas as pd; import plotly.express as px; _df = df.copy(); _df['year'] = _df['column_0'].astype(int); _df['movies_count'] = _df['column_1'].astype(int); _df = _df.sort_values('year'); fig = px.line(_df, x='year', y='movies_count', title='Evolução do número de filmes lançados ao longo dos anos', labels={'year': 'Ano de lançamento', 'movies_count': 'Quantidade de filmes'}, markers=True); fig.update_layout(xaxis=dict(tickmode='linear'), hovermode='x unified'",    
+    },
+    {
+        "id": "2",
+        "quesiton": "Número de filmes feitos por ano na Índia em gráfico de barras",
+        "explicacao_query": "A consulta conta quantos títulos do tipo 'Movie' foram produzidos na Índia em cada ano de lançamento. Ela filtra os registros onde a coluna country contém a palavra 'India', agrupa pelos anos de lançamento (release_year) e devolve a quantidade de filmes por ano, ordenada cronologicamente. Esses resultados podem ser usados para gerar um gráfico de barras.",
+        "query": "SELECT release_year AS ano, COUNT(*) AS total_filmes FROM netflix.netflix WHERE type = 'Movie' AND country LIKE '%India%' GROUP BY release_year ORDER BY release_year",
+        "visualizacao": "import pandas as pd; import plotly.express as px; if 'column_0' in df.columns and 'release_year' not in df.columns: df = df.rename(columns={'column_0': 'release_year'}); if 'column_1' in df.columns and 'total_filmes' not in df.columns: df = df.rename(columns={'column_1': 'total_filmes'}); df['release_year'] = df['release_year'].fillna('Não informado').astype(str); if df['total_filmes'].dtype != 'int64' and df['total_filmes'].dtype != 'float64': df['total_filmes'] = pd.to_numeric(df['total_filmes'], errors='coerce').fillna(0); df_agrupado = df.groupby('release_year', as_index=False)['total_filmes'].sum(); def ordenar_ano(val): try: return int(val); except ValueError: return float('inf'); df_agrupado = df_agrupado.sort_values(by='release_year', key=lambda col: col.map(ordenar_ano)); fig = px.bar(df_agrupado, x='release_year', y='total_filmes', title='Número de filmes produzidos na Índia por ano', labels={'release_year': 'Ano', 'total_filmes': 'Total de Filmes'}, color_discrete_sequence=['#1f77b4']); fig.update_layout(xaxis_title='Ano', yaxis_title='Total de Filmes', xaxis_tickangle=-45, bargap=0.2, template='plotly_white')",
+    }
+]

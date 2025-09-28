@@ -81,32 +81,11 @@ def create_workflow(memory: BaseCheckpointSaver = MemorySaver()):
 
     return app
 
-def save_messages(messages: list,file_name: str):
-    data = {
-        "user_question": [],
-        "model_response": []
-    }
-
-    for message in messages:
-        if message["role"] == "user":
-            data["user_question"].append(message["content"])
-        elif message["role"] == "assistant" and messages.index(message) != 0:
-            data["model_response"].append(message["content"])
-            
-    with open(file_name, 'a', encoding='utf-8', newline='') as f:
-        writer = csv.writer(f)
-        # Cabeçalho
-        writer.writerow(data.keys())
-        rows = zip(*data.values())
-        writer.writerows(rows)
-    print(f"Dados salvos em {file_name}")
-
-
 if __name__ == "__main__":
-
+    # python -m src.app.graph.graph
     # save_messages(data, "src/app/data/historic_data.csv")
 
-    question = "Quais os 5 melhores clientes?"
+    question = "Quais os 5 paises que mais fizeram filmes?"
     # question = "Olá, como você está?"
 
     app = create_workflow()

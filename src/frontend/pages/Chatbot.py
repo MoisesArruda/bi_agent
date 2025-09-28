@@ -7,6 +7,10 @@ import pandas as pd
 import uuid
 from typing import Dict, Any
 import csv
+import plotly.graph_objects as go
+import plotly.express as px
+import matplotlib.pyplot as plt
+import plotly
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
@@ -14,12 +18,10 @@ project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(_
 sys.path.append(project_root)
 
 from src.frontend.page_config import hide_navigation_sidebar, page_config, side_navbar_with_button
-from src.infrastructure.llm_providers.groq.client import GroqChatHandler
+from src.app.graph.graph import create_workflow
 
 image_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "img", 'ArrudaConsulting.jpeg')
 dataset_path = os.path.join(project_root, "data", "dataset", "netflix_movies_and_tv_shows.csv")
-
-groq_client = GroqChatHandler()
 
 
 def initialize_session_state():
@@ -32,14 +34,10 @@ def initialize_session_state():
 def execute_workflow(prompt: str) -> Dict[str, Any]:
     """Executa o workflow e retorna o estado final"""
 
-    invoke_model = groq_client.get_model("openai/gpt-oss-120b")
-    response = invoke_model.invoke(prompt)
-    return response
-
-    # unique_thread_id = str(uuid.uuid4())
-    # response = groq_client.send_message("Olá. Com qual modelo estou conversando?")
-    # config = {"configurable": {"thread_id": unique_thread_id}}
-    # return graph.invoke({"question": prompt}, config=config)
+    unique_thread_id = str(uuid.uuid4())
+    app = create_workflow()
+    config = {"configurable": {"thread_id": unique_thread_id}}
+    return app.invoke({"question": prompt}, config=config)
 
 def process_visualization_data(viz_data: Dict[str, Any]) -> tuple:
     """Processa dados de visualização e retorna fig, df_viz, df_viz_dict"""
@@ -69,13 +67,19 @@ def render_chat_message(message: Dict[str, Any]):
         
         # Renderiza elementos visuais se existirem (apenas para assistant)
         if role == "assistant":
-            if "fig" in message and message["fig"]:
-                st.plotly_chart(message["fig"])
-            elif "dataframe" in message and message["dataframe"]:
-                df_dict = message["dataframe"]
-                if df_dict and 'data' in df_dict and 'columns' in df_dict:
-                    df = pd.DataFrame(df_dict['data'], columns=df_dict['columns'])
-                    st.dataframe(df)
+            if "visualization_elements" in message:
+                unique_id = str(uuid.uuid4())
+                for i, element in enumerate(message["visualization_elements"]):
+                    if element["type"] == "figure":
+                        fig = pio.from_json(element["data"])
+                        st.plotly_chart(fig, key=f"hist_fig_{unique_id}_{i}")
+                    elif element["type"] == "dataframe":
+                        df = pd.DataFrame(element["data"], columns=element["columns"])
+                        st.dataframe(df, key=f"hist_df_{unique_id}_{i}")
+            
+            # Renderiza query SQL se existir
+        if "sql_query" in message and message["sql_query"]:
+            st.code(body=message["sql_query"], language="sql")
 
 
 def handle_bot_response(prompt: str):
@@ -96,39 +100,70 @@ def handle_bot_response(prompt: str):
             final_state = execute_workflow(prompt)
 
             # Processa a resposta de texto
-            messages_list = final_state.content
-            final_message = messages_list
-            # messages_list = final_state.invoke(prompt)
-            # messages_list = final_state.get("messages", [])
-            # final_message = "Desculpe, tive um problema interno."
-            # if messages_list:
-            #     last_message = messages_list[-1]
-            #     final_message = getattr(last_message, 'content', str(last_message))
+            messages_list = final_state.get("messages", [])
+            final_message = "Desculpe, tive um problema interno."
+            if messages_list:
+                last_message = messages_list[-1]
+                # Se for um dict pega o content
+                if isinstance(last_message, dict):
+                    final_message = last_message.get('content', str(last_message))
+                else:
+                    # Se for um objeto AIMessage, pega o atributo content
+                    final_message = getattr(last_message, 'content', str(last_message))
 
-            # Processa os dados de visualização (gráficos, tabelas)
-            fig = None
-            df_viz = None
-            df_viz_dict = None
-            # viz_data = final_state.get("python_code_store_variables_dict", {})
-            # fig, df_viz, df_viz_dict = process_visualization_data(viz_data)
-
-            # Renderiza a resposta de texto e visual
             st.markdown(final_message)
-            if fig is not None:
-                st.plotly_chart(fig)
-            elif df_viz is not None:
-                st.dataframe(df_viz)
+            
+            # Processa visualizações (nova abordagem)
+            visualization_elements = []
+            if "python_code_data_visualization" in final_state and final_state.get("python_code_validated"):
+                try:
+                    # Reconstrói DataFrame do estado
+                    df_data = final_state.get("df_data", [])
+                    df_columns = final_state.get("df_columns", [])
+                    df = pd.DataFrame(df_data, columns=df_columns) if df_data else pd.DataFrame()
+                    
+                    # Executa o código Python
+                    exec_globals = {"df": df, "pd": pd, "plotly": plotly, "go": go, "px": px, "plt": plt, "st": st}
+                    exec(final_state.get("python_code_data_visualization", ""), exec_globals)
+                    
+                    # Renderiza os resultados
+                    for key, value in exec_globals.items():
+                        if key not in ['df', 'pd', 'plotly', 'go', 'px', 'plt', 'st']:
+                            if isinstance(value, go.Figure):
+                                visualization_elements.append({"type": "figure", "data": value.to_json()})
+                            elif isinstance(value, pd.DataFrame):
+                                visualization_elements.append({"type": "dataframe", "data": value.to_dict('records'), "columns": value.columns.tolist()})
+                            # else:
+                            #     st.write(f"{key}: {value}")
+                                
+                except Exception as e:
+                    st.error(f"Erro ao executar visualização: {e}")
 
-            # Salva a resposta completa do assistente no histórico
+            for element in visualization_elements:
+                if element["type"] == "figure":
+                    fig = pio.from_json(element["data"])
+                    st.plotly_chart(fig)
+                elif element["type"] == "dataframe":
+                    df = pd.DataFrame(element["data"], columns=element["columns"])
+                    st.dataframe(df)
+            
+            # Mostra query SQL se existir
+            sql_query = final_state.get("query", None)
+            if sql_query:
+                st.code(body=sql_query, language="sql")
+                st.code(body=final_state.get("python_code_data_visualization"), language="python")
+                st.write("Raciocionio da query:" + final_state.get("explanation_query"))
+
+            # Salva a resposta completa do assistente no histórico (simplificado)
             assistant_message = {
                 "role": "assistant",
                 "content": final_message,
-                "fig": fig,
-                "dataframe": df_viz_dict,
+                "python_code_validated": final_state.get("python_code_validated", False),
+                "visualization_elements": visualization_elements,
+                "sql_query": sql_query
             }
 
             st.session_state.messages.append(assistant_message)
-            # save_messages(st.session_state.messages, "src/app/data/historic_data.csv")
 
 
 def render_header():
@@ -147,7 +182,7 @@ def render_header():
     st.markdown("<div style='margin-top: 50px;'></div>", unsafe_allow_html=True)
 
 def render_dataset_preview():
-    """Container dedicado para botões de perguntas sugeridas."""
+    """Container dedicado para visualizar o dataset"""
     df = pd.read_csv(dataset_path, sep=",", index_col=0)
     with st.expander("Clique para ver alguns dados da tabela", icon="📋"):
         st.dataframe(df)
@@ -169,20 +204,24 @@ def render_question_buttons():
         ]
         
         for i in range(0, len(suggested_questions), 2):
-            sub_col1, sub_col2 = st.columns(2)
-            
-            with sub_col1:
-                question1 = suggested_questions[i]
-                if st.button(question1, key=f"sidebar_q_{i}", use_container_width=True):
-                    st.session_state.pending_prompt = question1
-                    st.rerun()
-                    
-            if i + 1 < len(suggested_questions):
-                with sub_col2:
-                    question2 = suggested_questions[i+1]
-                    if st.button(question2, key=f"sidebar_q_{i+1}", use_container_width=True):
-                        st.session_state.pending_prompt = question2
+                sub_col1, sub_col2 = st.columns(2)
+                with sub_col1:
+                    question1 = suggested_questions[i]
+                    if st.button(question1, key=f"q_{i}", use_container_width=True):
+                        st.session_state.pending_prompt = question1
+                        st.info("Processando... Vá até o final da página para ver a resposta.")
+
                         st.rerun()
+                        
+
+                if i + 1 < len(suggested_questions):
+                    with sub_col2:
+                        question2 = suggested_questions[i+1]
+                        if st.button(question2, key=f"q_{i+1}", use_container_width=True):
+                            st.session_state.pending_prompt = question2
+                            st.info("Processando... Vá até o final da página para ver a resposta.")
+
+                            st.rerun()
                             
 def render_chat_history():
 
@@ -221,4 +260,5 @@ def main_app():
         handle_bot_response(prompt)
     
 if __name__ == "__main__":
+    # streamlit run src/frontend/pages/Chatbot.py
     main_app()

@@ -9,6 +9,7 @@ from langchain_tavily import TavilySearch
 from dotenv import load_dotenv
 from src.app.graph.constants import AgentState
 import pandas as pd
+import json
 
 load_dotenv()
 
@@ -59,8 +60,17 @@ def serialize_dataframe_to_state(df: pd.DataFrame, state: AgentState):
         state["df_shape"] = df.shape
         state["df_columns"] = df.columns.tolist()
 
+def load_data_dictionary(file: str = "dataset/dicionario"):
+    """Retorna o dicionário de colunas e descrições para a tabela informada."""
+    with open(f"data/{file}.json", "r", encoding="utf-8") as f:
+        data_dict = json.load(f)
+        return data_dict
+
 if __name__ == "__main__":
     # python -m src.app.graph.utils.utils
-    
-    create_llm_chain = _create_llm_chain(system_prompt="Você é um assistente de dados.", pydantic_object=None)
-    print(create_llm_chain)
+    print(load_data_dictionary())
+
+    # create_llm_chain = _create_llm_chain(system_prompt="Você é um assistente de dados.", pydantic_object=None)
+    # print(create_llm_chain)
+
+
