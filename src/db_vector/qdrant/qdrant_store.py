@@ -1,6 +1,6 @@
 from typing import List, Dict, Any
 from src.rag.indexing.embedder import DocumentEmbedder
-from src.db_vector.qdrant.client import QdrantClient
+from qdrant_client import QdrantClient
 from src.db_vector.vector_store_interface import VectorStoreInterface
 import logging
 
@@ -23,3 +23,4 @@ class QdrantVectorStore(VectorStoreInterface):
         query_embedding = self.embedder.embed_query(query)
         return self.client.search(query_embedding, k)
 
+pdf_path = "data/pdf/Visão de longo prazo Netflix.pdf"
