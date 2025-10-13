@@ -9,7 +9,7 @@ load_dotenv()
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
-sidebar_image = os.path.join(os.path.dirname(__file__), "img", 'ArrudaConsulting.jpeg')
+sidebar_image = os.path.join(os.path.dirname(__file__), "img", 'Logo-Arruda-Consulting.png')
 
 def page_config(layout: str = "wide", initial_sidebar_state: str = "auto", page_title: str = "AI Agent Arruda Consulting", page_icon: str = sidebar_image):
 
