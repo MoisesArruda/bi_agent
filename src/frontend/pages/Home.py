@@ -4,7 +4,7 @@ import os, sys
 project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
 sys.path.append(project_root)
 
-from src.frontend.page_config import hide_navigation_sidebar, side_navbar
+from src.frontend.page_config import remove_sidebar_navigation, configure_sidebar
 
 image_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "img", 'project.png')
 
@@ -23,17 +23,8 @@ def home_page():
         </style>
     """, unsafe_allow_html=True)
     
-    side_navbar()
-    hide_navigation_sidebar()
-    
-    
-    # if 'is_logged_in' not in session_state or not session_state.is_logged_in:
-    #     st.session_state["pagina_atual"] = "Login"
-    #     st.rerun()
-   
-    # username = session_state.get('username', 'Usuário')
-
-    # st.write(f"Bem vindo(a), {username}!")
+    configure_sidebar()
+    remove_sidebar_navigation()
 
     st.markdown('<div class="centered">', unsafe_allow_html=True)
     st.title("Solução completa de Inteligência Artificial para análise de dados")

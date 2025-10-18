@@ -17,7 +17,7 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
 sys.path.append(project_root)
 
-from src.frontend.page_config import hide_navigation_sidebar, page_config, side_navbar_with_button
+from src.frontend.page_config import remove_sidebar_navigation, configure_page, configure_sidebar_with_button
 from src.app.graph.graph import create_workflow
 
 image_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "img", 'ArrudaConsulting.jpeg')
@@ -28,7 +28,7 @@ def initialize_session_state():
     """Inicialização mínima necessária"""
     if "messages" not in st.session_state:
         st.session_state.messages = [
-            {"role": "assistant", "content": "Olá! Sou a GUIA, sua assistente para análise de dados. Como posso te ajudar hoje?"}
+            {"role": "assistant", "content": "Olá! Sou sua assistente para análise de dados. Como posso te ajudar hoje?"}
         ]
 
 def execute_workflow(prompt: str) -> Dict[str, Any]:
@@ -234,10 +234,10 @@ def main_app():
     """Função principal que organiza e executa a aplicação."""
 
     # 1. Inicialização
-    page_config(layout="wide")
+    configure_page(layout="wide")
     initialize_session_state()
-    side_navbar_with_button()
-    hide_navigation_sidebar()
+    configure_sidebar_with_button()
+    remove_sidebar_navigation()
 
     # 2. Renderiza a UI estática
     st.markdown("<div style='margin-top: 90px;'></div>", unsafe_allow_html=True)
