@@ -85,7 +85,7 @@ if __name__ == "__main__":
     # python -m src.app.graph.graph
     # save_messages(data, "src/app/data/historic_data.csv")
 
-    question = "Quais os 5 paises que mais fizeram filmes?"
+    question = "Quais oas novidades da netflix?"
     # question = "Olá, como você está?"
 
     app = create_workflow()

@@ -105,8 +105,6 @@ Answer: {{
 
 <Output>
 - Garanta que os gráficos estejam devidamente rotulados com títulos significativos e rótulos de eixo relevantes para as partes interessadas do negócio.
-- A saída deve conter apenas o objeto JSON válido, sem nenhum texto antes ou depois.
 - Retorne APENAS um objeto JSON válido com chaves duplas ("response" e "next_step"). Não use aspas simples.
-{format_instructions}
 </Output>
 """

@@ -16,14 +16,21 @@ from src.app.domain.prompts.generator_visualization import system_prompt_agent_p
 from src.app.domain.prompts.supervisor_agent import system_prompt_supervisor_agent
 from src.app.domain.prompts.final_agent import system_prompt_final_agent
 from src.app.domain.prompts.react_agent import react_prompt
-from src.app.graph.utils.utils import _create_llm_chain, build_react_agent, reconstruct_dataframe, serialize_dataframe_to_state, load_data_dictionary
+from src.app.domain.prompts.validator_visualization import system_prompt_agent_python_code_data_visualization_validator
+from src.app.graph.utils.utils import build_react_agent, reconstruct_dataframe, serialize_dataframe_to_state, load_data_dictionary, build_memory_context
 from langchain_tavily import TavilySearch
 from src.databases.redis.client import RedisManager
+from src.databases.redis.cache import SQLCache
+from redisvl.extensions.cache.llm import SemanticCache
+from logs.logs_ import logging_
+from src.infrastructure.llm_providers.azure.client import embeddings_model
+from src.infrastructure.llm_providers.llm_fabric import create_chain
+logger = logging_()
 
-
+MAX_ERROR_CHARS = 300
 
 def search_tables_and_schemas(state: AgentState) -> AgentState:
-    print("Buscando tabelas, esquemas e colunas no PostgreSQL...")
+    logger.info("Buscando tabelas, esquemas e colunas no MySql...")
 
     DB_NAME = "netflix"
 
@@ -42,11 +49,11 @@ def search_tables_and_schemas(state: AgentState) -> AgentState:
         
         else:
 
-            print(f"Erro na tentativa {attempt + 1}")
+            logger.error(f"Erro na tentativa {attempt + 1}")
             if attempt == 0:
                 time.sleep(1)
             if attempt == 1:
-                print("Falha após 2 tentativas, enviando para o usuário")
+                logger.error("Falha após 2 tentativas, enviando para o usuário")
             state["messages"] = [AIMessage(content="Erro ao acessar o banco de dados. Por favor, tente novamente mais tarde")]
             state["next_step"] = "END"
             
@@ -54,69 +61,175 @@ def search_tables_and_schemas(state: AgentState) -> AgentState:
 
 def redis_with_cache(state: AgentState) -> AgentState:
     
-    # Passo 1 e 2: Usa a classe RedisManager para conectar ao Redis
     manager = RedisManager()
     redis_client = manager.connect()
 
-    # Passo 3: Verifica se a conexão foi bem-sucedida
     if not redis_client:
-        print("❌ Falha na conexão com o Redis. A cache está indisponível.")
-
+        logger.error("❌ Falha na conexão com o Redis. A cache está indisponível.")
         state["messages"] = [AIMessage(content="Resposta não encontrada na cache")]
         state["next_step"] = "agent_sql_writer_node"
         return state
 
-    return state
+    try:
+        cache = SQLCache(redis_client=redis_client)
+    except Exception as e:
+        logger.error(f"❌ Erro ao inicializar cache: {e}")
+        state["messages"] = [AIMessage(content="Erro ao acessar cache")]
+        state["next_step"] = "agent_sql_writer_node"
+        return state
+        
+    user_question = state.get("question")
+    cached_response = cache.get_qa(user_question)
+
+    if cached_response:
+        logger.info(f"Resposta cacheada: {cached_response}")
+        query_sql = cached_response.get("querye","")
+        explanation_query = cached_response.get("explanation_query","")
+        python_viz = cached_response.get("python_viz","")
+
+        state["query"] = query_sql
+        state["explanation_query"] = explanation_query
+        state["python_code_data_visualization"] = python_viz
+
+        state["messages"] = [AIMessage(content=f"Resposta cacheada: {cached_response}")]
+        state["next_step"] = "Agent_SQL_Validator"
+        return state
+    
+    logger.info(f"🔍 Cache exato não encontrado. Iniciando busca semântica...")
+
+    try:
+
+        vectorizer = embeddings_model()
+
+        semantic_cache = SemanticCache(
+                name="cache-index",
+                vectorizer=vectorizer,
+                ttl=None,  # Sem expiração
+                redis_url=f"redis://{os.getenv('AZURE_REDIS_HOST')}:{os.getenv('AZURE_REDIS_PORT')}",
+                distance_threshold=0.2,  # Ajuste conforme necessário (0.2-0.4)
+                overwrite=False  # Não recriar o índice
+            )
+
+        semantic_result = semantic_cache.check(
+            prompt=user_question,
+            num_results=1  # Pegar apenas o mais similar
+        )
+
+        if semantic_result:
+            result = semantic_result[0]
+            response_text = result.get('response', '')
+            
+            logger.info(f"✅ Cache SEMÂNTICO encontrado!")
+
+            # Extrair query SQL e explicação
+            if "Query SQL:" in response_text:
+                parts = response_text.split("Query SQL:")
+                state["explanation_semantic"] = parts[0].replace("Explicação:", "").strip()
+                state["query"] = parts[1].strip()
+                state["next_step"] = "Agent_SQL_Writer"
+                return state
+            else:
+                logger.info(f"❌ Cache SEMÂNTICO não encontrado!")
+                state["next_step"] = "Agent_SQL_Writer"
+                return state
+
+    except Exception as e:
+        logger.error(f"Falha para acessar o cache: {e}")
+        state["messages"] = [AIMessage(content=f"Erro ao buscar resposta na cache: {e}")]
+        state["next_step"] = "Agent_SQL_Writer"
+        return state
 
 def supervisor_agent_node(state: AgentState) -> AgentState:
     
-    print("\n### Supervisor Agent")
+    logger.info("\n### Agente Supervisor")
 
-    # Verifica se o fluxo principal já rodou e deve apenas formatar a resposta final
-    if state.get("result_debug_bi") == "Pass":
-        print(">>> Supervisor: Modo de Resposta Final")
+    memory_context = build_memory_context(state)
+    state["memory_context"] = memory_context
+
+    # ✅ Extrair dados de memória para atualização
+    conversation_history = state.get("conversation_history", [])
+    last_questions = state.get("last_questions", [])
+
+    if state.get("result_debug_bi") == False:
+
+        try:
+
+            agent_supervisor = create_chain(system_prompt_supervisor_agent, pydantic_object=SupervisorAgentResponse)
+
+            logger.info(f"Pergunta do usuário: {state['question']}")
+            agent_supervisor_response = agent_supervisor.invoke({
+                "question": state["question"],
+                "database_schemas": state.get("database_schemas"),
+                "memory_context": last_questions
+            })
+
+            state["messages"] = agent_supervisor_response.response
+            state["next_step"] = agent_supervisor_response.next_step
+
+            # ✅ ATUALIZAR MEMÓRIA após resposta final
+            new_conversation_entry = {
+                "question": state["question"],
+                "response": agent_supervisor_response.response
+            }
+
+
+            if state["next_step"] == "END":
+            
+                state["conversation_history"] = conversation_history + [new_conversation_entry]
+                state["last_questions"] = last_questions + [state["question"]]
+
+                logger.info(f"Resposta do LLM: {agent_supervisor_response}")
+
+                return state
+            else:
+                state["question"] = agent_supervisor_response.response
+                state["conversation_history"] = conversation_history + [new_conversation_entry]
+                state["last_questions"] = last_questions + [agent_supervisor_response]
+
+                return state
+
+        except Exception as e:
+            logger.error(f"Erro no roteamento inicial do supervisor: {e}")
+            return {
+                **state,
+                "messages": [{"role": "assistant", "content": "Erro ao processar a pergunta, por favor, tente novamente."}],
+                "next_step": END
+            }
+
+        # Verifica se o fluxo principal já rodou e deve apenas formatar a resposta final
+    else:
+        logger.info(">>> Supervisor: Modo de Resposta Final")
+
+        try:
         
         # Cria a cadeia com o prompt de finalização
-        chain = _create_llm_chain(system_prompt_final_agent) # Sem pydantic, pois a saída é texto livre
+            chain = create_chain(system_prompt_final_agent, pydantic_object=SupervisorAgentResponse) # Sem pydantic, pois a saída é texto livre
+            
+            response = chain.invoke({
+                "question": state["question"],
+                "explanation_query": state.get("explanation_query", "N/A"),
+                "visualization_request": state.get("visualization_request", "N/A"),
+                "explanation_python_code_data_visualization": state.get("explanation_python_code_data_visualization", "N/A"),
+            }).response
+            
+            logger.info(response) # Atualiza a mensagem final para o usuário
 
-        df_data = state.get("df_data", [])
-        
-        response_text = chain.invoke({
-            "question": state["question"],
-            "explanation_query": state.get("explanation_query", "N/A"),
-            "visualization_request": state.get("visualization_request", "N/A"),
-            "explanation_python_code_data_visualization": state.get("explanation_python_code_data_visualization", "N/A"),
-            # "python_code_data_visualization": state.get("python_code_data_visualization", "N/A"),
-            "format_instructions": SupervisorAgentResponse
-        }).content
-        
-        print(response_text) # Atualiza a mensagem final para o usuário
+            state["messages"] = [AIMessage(content=response)]
+            state["result_debug_bi"] = ""
+            state["next_step"] = END
 
-        state["messages"] = [AIMessage(content=response_text)]
-        state["next_step"] = END
+            return state
 
-        return state
-
-    else:
-        print(">>> Supervisor: Modo de Roteamento Inicial")
-
-        chain = _create_llm_chain(system_prompt_supervisor_agent, SupervisorAgentResponse)
-
-        response = chain.invoke({
-            "question": state["question"],
-            "database_schemas": state.get("database_schemas"),
-            "format_instructions": SupervisorAgentResponse
-        })
-        print(response.response)
-        print(f"Próximo passo: {response.next_step}")
-
-        state["messages"] = [AIMessage(content=response.response)]
-        state["next_step"] = response.next_step
-
-    return state
+        except Exception as e:
+            logger.error(f"Erro no roteamento final do supervisor: {e}")
+            return {
+                **state,
+                "messages": [{"role": "assistant", "content": "Erro ao processar a pergunta, por favor, tente novamente."}],
+                "next_step": END
+            }
 
 def agent_tools_node(state: AgentState) -> AgentState:
-    print("### Agent Tools")
+    logger.info("### Agent Tools")
 
     today = datetime.datetime.today().strftime("%Y-%m-%d")
 
@@ -133,53 +246,73 @@ def agent_tools_node(state: AgentState) -> AgentState:
         "messages": formatted_prompt
     })
 
-    print(response["messages"][-1].content)
+    logger.info(response["messages"][-1].content)
     state["messages"] = [AIMessage(content=response["messages"][-1].content)]
 
     return state
 
 def agent_sql_writer_node(state: AgentState) -> AgentState:
-    print("### Agent SQL Writer")
-
-
-    chain = _create_llm_chain(system_prompt_agent_sql_writer, SQLQueryResponse)
-    response = chain.invoke({
-        "question": state.get("question"),
-        "database_schemas": state.get("database_schemas"),
-        "columns": state.get("columns"),
-        "data_dictionary": load_data_dictionary(),
-        "format_instructions": SQLQueryResponse
-    })
+    """
+    Agente que gera a query SQL baseada na pergunta do usuário e nas informações do banco de dados.
     
-    state["query"] = response.query
-    state["explanation_query"] = response.explain
+    Args:
+        state: Estado atual do agente.
+    Returns:
+        Estado atualizado do agente.
+    """
+    logger.info("### Chamando o Agente SQL Writer")
 
-    print(response)
-    print(f"Query gerada:\n{response.query}")
-    
-    return state
+    try:
+
+        if state.get("query_semantic") and state.get("explanation_semantic"):
+            query_semantic = state.get("query_semantic")
+            explanation_semantic = state.get("explanation_semantic")
+        else:
+            query_semantic = ""
+            explanation_semantic = ""
+
+        chain = create_chain(system_prompt_agent_sql_writer, pydantic_object=SQLQueryResponse)
+        response = chain.invoke({
+            "question": state.get("question"),
+            "database_schemas": state.get("database_schemas"),
+            "columns": state.get("columns"),
+            "data_dictionary": load_data_dictionary(),
+            "query_semantic": query_semantic,
+            "explanation_semantic": explanation_semantic
+        })
+
+        logger.info(f"Resposta do LLM: {response.explain}")
+        logger.info(f"Query gerada:\n{response.query}")    
+        state["query"] = response.query
+        state["explanation_query"] = response.explain
+
+        return state
+
+    except Exception as e:
+        logger.error(f"Erro no agent_sql_writer_node: {e}")
+        return {
+            **state,
+            "messages": [AIMessage(content=f"Erro ao gerar query SQL: {e}")],
+            "next_step": END
+        }
 
 
 def agent_sql_validator_node(state: AgentState) -> AgentState:    
 
-    print("### Agent SQL validator")
-    
-    # DB_DIALECT = "sqlserver"
+    logger.info("### Começando o Agente SQL Validator")
 
     try:
         query = state.get("query")
         question = state.get("question")
         result, columns = None, None
 
-        # if DB_DIALECT == 'postgress':
-        # PRIMEIRO: Validar com EXPLAIN (dry-run)
         db = AzureSQLManager()
-        print("🔍 Validando query com EXPLAIN...")
+ 
+        logger.info("🔍 Validando query com EXPLAIN...")
         table_structure = db.get_table_info("netflix")
-        # explain_result = query_sql_server(f"EXPLAIN {query}")
         if not table_structure: # Um erro na execução do EXPLAIN indica erro de sintaxe
             raise SyntaxError("Falha na validação com EXPLAIN. A query pode estar sintaticamente incorreta.")
-        print(f"EXPLAIN resultado: {table_structure}")
+        logger.info(f"EXPLAIN resultado: {table_structure}")
 
         result = db._querying(query)
 
@@ -190,7 +323,6 @@ def agent_sql_validator_node(state: AgentState) -> AgentState:
             num_columns = len(result[0]) if result else 0
             columns = [f"column_{i}" for i in range(num_columns)]
     
-
         df = pd.DataFrame(result, columns=columns) if result else pd.DataFrame()
         
         # Heurística para nomear coluna de contagem
@@ -199,7 +331,7 @@ def agent_sql_validator_node(state: AgentState) -> AgentState:
             
         serialize_dataframe_to_state(df, state)
 
-        print(f"✅ Validação bem-sucedida. DataFrame criado com shape: {state['df_shape']}")
+        logger.info(f"✅ Validação bem-sucedida. DataFrame criado com shape: {state['df_shape']}")
         
         state["result_debug_sql"] = "Pass"
         state["error_msg_debug_sql"] = ""
@@ -210,81 +342,81 @@ def agent_sql_validator_node(state: AgentState) -> AgentState:
 
     
     except Exception as e:
-        print(f"❌ Erro na validação da query: {e}")
+        logger.error(f"❌ Erro na validação da query: {e}")
         state["num_retries_debug_sql"] = state.get("num_retries_debug_sql",0) + 1
         state["result_debug_sql"] = "Not Pass"
         state["error_msg_debug_sql"] = str(e)[:MAX_ERROR_CHARS]
 
         max_retries = state.get("max_num_retries_debug", 3)
         if state["num_retries_debug_sql"] < max_retries:
-            print("\n🔄 Tentando corrigir a query...")
-            chain = _create_llm_chain(system_prompt_agent_sql_validator)
-            corrected_query = chain.invoke({
-                "query": state.get("query"),
-                "question": state.get("question"),
+            logger.info("\n🔄 Tentando corrigir a query...")
+
+            chain = create_chain(system_prompt_agent_sql_validator, pydantic_object=SQLQueryResponse)
+
+            response = chain.invoke({
+                "question": question,
                 "database_schemas": state.get("database_schemas"),
                 "columns": state.get("columns"),
                 "query": state.get("query"),
-                "error_msg_debug": state.get("error_msg_debug_sql")
-            }).content
-            state["query"] = corrected_query
-            print(f"\n📝 Query ajustada:\n{state['query']}")
+                "error_msg_debug": state["error_msg_debug_sql"],
+            })
+
+            state["query"] = response.query
+            logger.info(f"\n📝 Query ajustada:\n{state['query']}")
         else:
-            print("⚠️ Número máximo de tentativas de correção da query atingido.")
+            logger.info("⚠️ Número máximo de tentativas de correção da query atingido.")
             
-    return state
+        return state
 
 
 
 def agent_bi_expert_node(state: AgentState) -> AgentState:
 
-    print("### Agent BI Expert")
+    logger.info("### Começando oAgent BI Expert")
 
     # df = reconstruct_dataframe(state)
     df_data = state.get("df_data", [])
     
-    chain = _create_llm_chain(system_prompt_agent_bi_expert, AgentBiExpertResponse)
-    response = chain.invoke({
+    agent_bi = create_chain(system_prompt_agent_bi_expert, pydantic_object=AgentBiExpertResponse)
+    agent_bi_response = agent_bi.invoke({
         "question": state.get("question"),
         "query": state.get("query"),
         "explanation_query": state.get("explanation_query"),
-        # "df_columns": list(df.columns),
         "df_structure": state.get("df_structure", ""),
         "df_sample": df_data[:5] if df_data else [],
-        "format_instructions": AgentBiExpertResponse
     })
 
-    state["visualization_request"] = response.response
-    state["next_step"] = response.next_step
+    state["visualization_request"] = agent_bi_response.response
+    state["next_step"] = agent_bi_response.next_step
     state["result_debug_bi"] = "Pass"
-    print(f"\n### Solicitação de Visualização:\n{response}")
+    logger.info(f"\n### Solicitação de Visualização:\n{agent_bi_response.response}")
     return state
 
     
 def agent_python_code_data_visualization_generator_node(state: AgentState) -> AgentState:
 
-    print(f"\n### Python Data visualization code")
+    logger.info(f"\n### Python Data visualization code")
 
     df_data = state.get("df_data", [])
 
-    chain = _create_llm_chain(system_prompt_agent_python_code_data_visualization_generator, PythonCodeDataVisualizationResponse)
+    chain = create_chain(system_prompt_agent_python_code_data_visualization_generator, pydantic_object=PythonCodeDataVisualizationResponse)
     response = chain.invoke({
         "visualization_request": state["visualization_request"],
         "df_structure": state.get("df_dtypes", {}),
         "df_sample": df_data[:5] if df_data else [],
-        "format_instructions": PythonCodeDataVisualizationResponse
     })
+
+    logger.info(f"\n### Código de Visualização Gerado:\n{response.explain}")
 
     state["python_code_data_visualization"] = response.python_code_data_visualization
     state["explanation_python_code_data_visualization"] = response.explain
     
-    # print(f"\n### Código de Visualização Gerado:\n{response.python_code_data_visualization}")
     return state
 
 
 def agent_python_code_data_visualization_validator_node(state: AgentState) -> AgentState:    
 
-    print("\n### Validador de Código de Visualização")
+    logger.info("\n### Validador de Código de Visualização")
 
     try:
         df = reconstruct_dataframe(state)
@@ -298,7 +430,7 @@ def agent_python_code_data_visualization_validator_node(state: AgentState) -> Ag
         exec_globals = {"df": df, "pd": pd, "plotly": plotly, "go": go, "px": px, "plt": plt}
         exec(state.get("python_code_data_visualization"), exec_globals)
 
-        print(f"✅ Validação bem-sucedida.")
+        logger.info(f"✅ Validação bem-sucedida.")
 
         state["python_code_validated"] = True
         state["result_debug_python_code_data_visualization"] = "Pass"
@@ -307,29 +439,27 @@ def agent_python_code_data_visualization_validator_node(state: AgentState) -> Ag
         
 
     except Exception as e:
-        print(f"❌ Erro na validação do código: {e}")
+        logger.error(f"❌ Erro na validação do código: {e}")
 
-        error_fields = {
-        "num_retries_debug_python_code_data_visualization": state.get("num_retries_debug_python_code_data_visualization", 0) + 1,
-        "result_debug_python_code_data_visualization": "Not Pass",
-        "error_msg_debug_python_code_data_visualization": str(e)[:MAX_ERROR_CHARS]
-        }
+        state["num_retries_debug_python_code_data_visualization"] = state.get("num_retries_debug_python_code_data_visualization", 0) + 1
+        state["result_debug_python_code_data_visualization"] = "Not Pass"
+        state["error_msg_debug_python_code_data_visualization"] = str(e)[:MAX_ERROR_CHARS]
         
         max_retries = state.get("max_num_retries_debug", 3)  # Valor padrão 3
-        if error_fields["num_retries_debug_python_code_data_visualization"] < max_retries:
-            print("\n🔄 Tentando corrigir o código...")
-            chain = _create_llm_chain(system_prompt_agent_python_code_data_visualization_validator)
-            response = chain.invoke({
+        if state["num_retries_debug_python_code_data_visualization"] < max_retries:
+            logger.info("\n🔄 Tentando corrigir o código...")
+            agent = create_chain(system_prompt_agent_python_code_data_visualization_validator, pydantic_object=PythonCodeDataVisualizationResponse)
+            response = agent.invoke({
                 "python_code_data_visualization": state.get("python_code_data_visualization"),
                 "error_msg_debug": state.get("error_msg_debug_python_code_data_visualization")
-            }).content
+            })
 
-            error_fields["python_code_data_visualization"] = response
-            print(f"\n�� Código ajustado:\n {response}")
+            state["python_code_data_visualization"] = response.explain
+            logger.info(f"\n Código ajustado:\n {response}")
         else:
-            print("⚠️ Número máximo de tentativas de correção do código atingido.")
+            logger.info("⚠️ Número máximo de tentativas de correção do código atingido.")
 
-        return {**state, **error_fields}
+        return state
 
 
 if __name__ == "__main__":
@@ -353,7 +483,7 @@ if __name__ == "__main__":
         "num_retries_debug_python_code_data_visualization": 0,
         "result_debug_python_code_data_visualization": "",
         "error_msg_debug_python_code_data_visualization": "",
-        "result_debug_bi": "",
+        "result_debug_bi": False,
         "df_dtypes": {},
         "df_data": [],
         "df_shape": (0, 0),
@@ -365,26 +495,29 @@ if __name__ == "__main__":
     }
 
 
-    # state0 = supervisor_agent_node(agent_state_empty)
-    # print(state0)
+    state0 = supervisor_agent_node(agent_state_empty)
+    print(state0)
 
-    state1 = agent_tools_node(agent_state_empty)
-    # print(state1)
+    state1 = agent_tools_node(state0)
+    print(state1)
 
-    # state1 = search_tables_and_schemas(state0)
-    # print(state1)
+    state2 = search_tables_and_schemas(state1)
+    print(state2)
 
-    # state2 = agent_sql_writer_node(state1)
-    # print(state2)
+    state3 = redis_with_cache(state2)
+    print(state3)
 
-    # state3 = agent_sql_validator_node(state2)
-    # print(state3)
-
-    # state4 = agent_bi_expert_node(state3)
+    # state4 = agent_sql_writer_node(state3)
     # print(state4)
-    
-    # state5 = agent_python_code_data_visualization_generator_node(state4)
+
+    # state5 = agent_sql_validator_node(state4)
     # print(state5)
 
-    # state6 = agent_python_code_data_visualization_validator_node(state5)
+    # state6 = agent_bi_expert_node(state5)
     # print(state6)
+    
+    # state7 = agent_python_code_data_visualization_generator_node(state6)
+    # print(state7)
+
+    # state8 = agent_python_code_data_visualization_validator_node(state7)
+    # print(state8)

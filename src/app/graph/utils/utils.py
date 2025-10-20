@@ -1,7 +1,6 @@
 from langchain_groq import ChatGroq
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import PydanticOutputParser
-from 
 from langgraph.prebuilt import create_react_agent
 from typing import Type, List
 from langchain_core.tools import BaseTool
@@ -14,19 +13,22 @@ import json
 
 load_dotenv()
 
-def _create_llm_chain(system_prompt: str, pydantic_object: Type = None):
+def build_memory_context(state: AgentState) -> str:
+    """Constrói o contexto de memória uma única vez."""
+    conversation_history = state.get("conversation_history", [])
+    last_questions = state.get("last_questions", [])
 
-    """Cria uma cadeia LCEL com LLM, prompt e um parser Pydantic opcional."""
-    groq_client = GroqChatHandler()
-    llm = groq_client.get_model("openai/gpt-oss-120b")
+    memory_context = ""
+    if conversation_history:
+        memory_context = "\n\nHistórico da conversa:\n"
+        for entry in conversation_history[-5:]:  # Últimas 5 interações
+            memory_context += f"Usuário: {entry.get('question', '')}\n"
+            # memory_context += f"Assistente: {entry.get('response', '')[:200]}...\n\n"
 
-    if pydantic_object:
-        parser = PydanticOutputParser(pydantic_object=pydantic_object)
-        prompt_template = ChatPromptTemplate.from_messages([("system", system_prompt)])
-        return prompt_template.partial(format_instructions=parser.get_format_instructions()) | llm | parser
-    else:
-        prompt_template = ChatPromptTemplate.from_messages([("system", system_prompt)])
-        return prompt_template | llm
+    if last_questions:
+        memory_context += f"\nÚltimas perguntas do usuário: {', '.join(last_questions[-5:])}"
+
+    return memory_context
 
 
 def build_react_agent(tools: List[BaseTool], system_prompt: str = None, pydantic_object: Type = None):

@@ -1,0 +1,221 @@
+2025-10-19 08:44:50,869 - arruda_consulting - INFO - supervisor_agent_node:134 - 
+### Agente Supervisor
+2025-10-19 08:48:20,154 - arruda_consulting - INFO - supervisor_agent_node:134 - 
+### Agente Supervisor
+2025-10-19 08:48:20,154 - arruda_consulting - INFO - supervisor_agent_node:192 - >>> Supervisor: Modo de Resposta Final
+2025-10-19 08:48:20,154 - arruda_consulting - ERROR - supervisor_agent_node:215 - Erro no roteamento final do supervisor: create_chain() got an unexpected keyword argument 'llm_model'
+2025-10-19 08:49:03,436 - arruda_consulting - INFO - supervisor_agent_node:134 - 
+### Agente Supervisor
+2025-10-19 08:49:03,436 - arruda_consulting - INFO - supervisor_agent_node:192 - >>> Supervisor: Modo de Resposta Final
+2025-10-19 08:49:03,436 - arruda_consulting - ERROR - supervisor_agent_node:215 - Erro no roteamento final do supervisor: create_chain() got an unexpected keyword argument 'llm_model'
+2025-10-19 08:49:36,964 - arruda_consulting - INFO - supervisor_agent_node:134 - 
+### Agente Supervisor
+2025-10-19 08:49:36,964 - arruda_consulting - INFO - supervisor_agent_node:192 - >>> Supervisor: Modo de Resposta Final
+2025-10-19 08:49:40,424 - arruda_consulting - ERROR - supervisor_agent_node:215 - Erro no roteamento final do supervisor: 'SupervisorAgentResponse' object has no attribute 'content'
+2025-10-19 08:50:23,292 - arruda_consulting - INFO - supervisor_agent_node:134 - 
+### Agente Supervisor
+2025-10-19 08:50:23,294 - arruda_consulting - INFO - supervisor_agent_node:192 - >>> Supervisor: Modo de Resposta Final
+2025-10-19 08:50:25,909 - arruda_consulting - INFO - supervisor_agent_node:206 - Olá! Sobre a sua pergunta — "Quais são as novidades da Netflix?" — não há dados disponíveis no momento para responder a essa questão. Caso precise de informações sobre outro tema ou queira analisar outro aspecto do negócio, estou à disposição para ajudar!
+2025-10-19 08:53:18,095 - arruda_consulting - INFO - supervisor_agent_node:134 - 
+### Agente Supervisor
+2025-10-19 08:53:19,429 - arruda_consulting - INFO - supervisor_agent_node:149 - Pergunta do usuário: Quais são as novidades da Netflix?
+2025-10-19 08:53:19,612 - arruda_consulting - ERROR - supervisor_agent_node:183 - Erro no roteamento inicial do supervisor: "Input to ChatPromptTemplate is missing variables {'format_instructions'}.  Expected: ['database_schemas', 'format_instructions', 'question'] Received: ['question', 'database_schemas', 'memory_context']\nNote: if you intended {format_instructions} to be part of the string and not a variable, please escape it with double curly braces like: '{{format_instructions}}'.\nFor troubleshooting, visit: https://python.langchain.com/docs/troubleshooting/errors/INVALID_PROMPT_INPUT "
+2025-10-19 09:00:14,406 - arruda_consulting - INFO - supervisor_agent_node:134 - 
+### Agente Supervisor
+2025-10-19 09:00:15,657 - arruda_consulting - INFO - supervisor_agent_node:149 - Pergunta do usuário: Quais são as novidades da Netflix?
+2025-10-19 09:00:17,322 - arruda_consulting - ERROR - supervisor_agent_node:183 - Erro no roteamento inicial do supervisor: 'RunnableSequence' object has no attribute 'next_step'
+2025-10-19 09:01:35,100 - arruda_consulting - INFO - supervisor_agent_node:134 - 
+### Agente Supervisor
+2025-10-19 09:01:36,255 - arruda_consulting - INFO - supervisor_agent_node:149 - Pergunta do usuário: Quais são as novidades da Netflix?
+2025-10-19 09:01:37,861 - arruda_consulting - INFO - supervisor_agent_node:170 - Resposta do LLM: response='As novidades da Netflix podem incluir novos lançamentos de filmes, séries, documentários e atualizações na plataforma. Para informações detalhadas sobre os lançamentos mais recentes ou novidades específicas, por favor, especifique se deseja saber sobre algum gênero, país ou período específico.' next_step='END'
+2025-10-19 09:03:28,314 - arruda_consulting - INFO - supervisor_agent_node:134 - 
+### Agente Supervisor
+2025-10-19 09:03:28,314 - arruda_consulting - INFO - supervisor_agent_node:191 - >>> Supervisor: Modo de Resposta Final
+2025-10-19 09:03:30,941 - arruda_consulting - INFO - supervisor_agent_node:205 - Olá! Sobre a sua pergunta — "Quais são as novidades da Netflix?" — não há dados disponíveis no momento para responder a essa questão. Caso precise de informações sobre outro tema ou queira analisar outro aspecto do negócio, estou à disposição para ajudar!
+2025-10-19 09:04:46,669 - arruda_consulting - INFO - supervisor_agent_node:134 - 
+### Agente Supervisor
+2025-10-19 09:04:47,757 - arruda_consulting - INFO - supervisor_agent_node:149 - Pergunta do usuário: Quais são as novidades da Netflix?
+2025-10-19 09:04:49,358 - arruda_consulting - INFO - supervisor_agent_node:170 - Resposta do LLM: response='As novidades da Netflix podem incluir novos lançamentos de filmes, séries, documentários e atualizações na plataforma. Para informações detalhadas sobre os lançamentos mais recentes ou novidades específicas, por favor, especifique se deseja saber sobre algum gênero, país ou período específico.' next_step='END'
+2025-10-19 09:07:37,823 - arruda_consulting - INFO - supervisor_agent_node:134 - 
+### Agente Supervisor
+2025-10-19 09:07:38,958 - arruda_consulting - INFO - supervisor_agent_node:149 - Pergunta do usuário: Quais são as novidades da Netflix?
+2025-10-19 09:07:40,354 - arruda_consulting - ERROR - supervisor_agent_node:182 - Erro no roteamento inicial do supervisor: cannot access local variable 'new_conversation_entry' where it is not associated with a value
+2025-10-19 09:07:57,908 - arruda_consulting - INFO - supervisor_agent_node:134 - 
+### Agente Supervisor
+2025-10-19 09:07:59,293 - arruda_consulting - INFO - supervisor_agent_node:149 - Pergunta do usuário: Quais são as novidades da Netflix?
+2025-10-19 09:08:01,032 - arruda_consulting - ERROR - supervisor_agent_node:182 - Erro no roteamento inicial do supervisor: cannot access local variable 'new_conversation_entry' where it is not associated with a value
+2025-10-19 09:08:01,035 - arruda_consulting - INFO - agent_sql_writer_node:253 - ### Chamando o Agente SQL Writer
+2025-10-19 09:08:01,035 - arruda_consulting - ERROR - agent_sql_writer_node:282 - Erro no agent_sql_writer_node: create_chain() got an unexpected keyword argument 'llm_model'
+2025-10-19 09:09:44,782 - arruda_consulting - INFO - supervisor_agent_node:134 - 
+### Agente Supervisor
+2025-10-19 09:09:46,297 - arruda_consulting - INFO - supervisor_agent_node:149 - Pergunta do usuário: Quais são as novidades da Netflix?
+2025-10-19 09:09:47,914 - arruda_consulting - INFO - supervisor_agent_node:170 - Resposta do LLM: response='As novidades da Netflix podem incluir lançamentos de filmes, séries, documentários e atualizações na plataforma. Para obter informações específicas sobre os lançamentos mais recentes ou novidades do catálogo, por favor, especifique se deseja saber sobre algum gênero, país ou período específico.' next_step='END'
+2025-10-19 09:09:47,914 - arruda_consulting - INFO - agent_sql_writer_node:253 - ### Chamando o Agente SQL Writer
+2025-10-19 09:09:48,723 - arruda_consulting - ERROR - agent_sql_writer_node:282 - Erro no agent_sql_writer_node: "Input to ChatPromptTemplate is missing variables {'format_instructions'}.  Expected: ['columns', 'database_schemas', 'format_instructions', 'question'] Received: ['question', 'database_schemas', 'columns', 'data_dictionary', 'query_semantic', 'explanation_semantic']\nNote: if you intended {format_instructions} to be part of the string and not a variable, please escape it with double curly braces like: '{{format_instructions}}'.\nFor troubleshooting, visit: https://python.langchain.com/docs/troubleshooting/errors/INVALID_PROMPT_INPUT "
+2025-10-19 10:56:21,260 - arruda_consulting - INFO - supervisor_agent_node:134 - 
+### Agente Supervisor
+2025-10-19 10:56:22,645 - arruda_consulting - INFO - supervisor_agent_node:149 - Pergunta do usuário: Quais são as novidades da Netflix?
+2025-10-19 10:56:24,468 - arruda_consulting - ERROR - supervisor_agent_node:182 - Erro no roteamento inicial do supervisor: cannot access local variable 'new_conversation_entry' where it is not associated with a value
+2025-10-19 10:56:24,484 - arruda_consulting - INFO - agent_sql_writer_node:253 - ### Chamando o Agente SQL Writer
+2025-10-19 10:56:27,124 - arruda_consulting - INFO - agent_sql_writer_node:274 - Resposta do LLM: A consulta retorna os títulos, tipos (filme ou série), diretores, elenco, país de produção, data de inclusão na Netflix, ano de lançamento, classificação e duração dos conteúdos adicionados recentemente à plataforma. Para identificar as novidades, é utilizado o campo 'date_added', ordenando os resultados pela data de inclusão em ordem decrescente, mostrando primeiro os lançamentos mais recentes.
+2025-10-19 10:56:27,124 - arruda_consulting - INFO - agent_sql_writer_node:275 - Query gerada:
+SELECT title, type, director, cast, country, date_added, release_year, rating, duration
+FROM table
+ORDER BY date_added DESC
+LIMIT 20;
+2025-10-19 11:01:43,381 - arruda_consulting - INFO - supervisor_agent_node:134 - 
+### Agente Supervisor
+2025-10-19 11:01:46,387 - arruda_consulting - INFO - supervisor_agent_node:149 - Pergunta do usuário: Quais são as novidades da Netflix?
+2025-10-19 11:01:48,146 - arruda_consulting - INFO - agent_sql_writer_node:253 - ### Chamando o Agente SQL Writer
+2025-10-19 11:01:52,416 - arruda_consulting - INFO - agent_sql_writer_node:274 - Resposta do LLM: A consulta retorna os lançamentos mais recentes disponíveis na Netflix, incluindo filmes, séries e documentários. Utiliza as colunas 'type' para identificar o tipo de conteúdo, 'title' para o nome, 'director' para o diretor, 'cast' para os atores, 'country' para o país de produção, 'date_added' para a data em que foi adicionado à Netflix, 'release_year' para o ano de lançamento, 'rating' para a classificação indicativa e 'duration' para a duração ou número de temporadas. Os resultados são ordenados pela coluna 'date_added' em ordem decrescente para mostrar as novidades mais recentes primeiro. O filtro LIMIT 20 exibe apenas os 20 lançamentos mais recentes.
+2025-10-19 11:01:52,417 - arruda_consulting - INFO - agent_sql_writer_node:275 - Query gerada:
+SELECT type, title, director, cast, country, date_added, release_year, rating, duration
+FROM table
+ORDER BY date_added DESC
+LIMIT 20;
+2025-10-19 11:06:24,017 - arruda_consulting - INFO - agent_sql_validator_node:292 - ### Começando o Agente SQL Validator
+2025-10-19 11:06:24,017 - arruda_consulting - INFO - agent_sql_validator_node:301 - 🔍 Validando query com EXPLAIN...
+2025-10-19 11:06:45,165 - arruda_consulting - INFO - agent_sql_validator_node:305 - EXPLAIN resultado: ("Erro ao buscar informações da tabela: 2003 (HY000): Can't connect to MySQL server on 'serverunimetal.mysql.database.azure.com:3306' (10060)", None)
+2025-10-19 11:07:06,240 - arruda_consulting - ERROR - agent_sql_validator_node:335 - ❌ Erro na validação da query: 2003 (HY000): Can't connect to MySQL server on 'serverunimetal.mysql.database.azure.com:3306' (10060)
+2025-10-19 11:07:06,242 - arruda_consulting - INFO - agent_sql_validator_node:342 - 
+🔄 Tentando corrigir a query...
+2025-10-19 11:08:39,355 - arruda_consulting - INFO - agent_sql_validator_node:292 - ### Começando o Agente SQL Validator
+2025-10-19 11:08:39,370 - arruda_consulting - INFO - agent_sql_validator_node:301 - 🔍 Validando query com EXPLAIN...
+2025-10-19 11:09:00,594 - arruda_consulting - INFO - agent_sql_validator_node:305 - EXPLAIN resultado: ("Erro ao buscar informações da tabela: 2003 (HY000): Can't connect to MySQL server on 'serverunimetal.mysql.database.azure.com:3306' (10060)", None)
+2025-10-19 11:09:21,693 - arruda_consulting - ERROR - agent_sql_validator_node:335 - ❌ Erro na validação da query: 2003 (HY000): Can't connect to MySQL server on 'serverunimetal.mysql.database.azure.com:3306' (10060)
+2025-10-19 11:09:21,693 - arruda_consulting - INFO - agent_sql_validator_node:342 - 
+🔄 Tentando corrigir a query...
+2025-10-19 11:09:25,503 - arruda_consulting - INFO - agent_sql_validator_node:356 - 
+📝 Query ajustada:
+SELECT Titulo, DataLancamento, Descricao
+FROM NovidadesNetflix
+WHERE DataLancamento >= DATEADD(month, -1, GETDATE())
+ORDER BY DataLancamento DESC;
+2025-10-19 11:10:37,639 - arruda_consulting - INFO - agent_bi_expert_node:365 - ### Começando oAgent BI Expert
+2025-10-19 11:12:58,778 - arruda_consulting - INFO - agent_bi_expert_node:365 - ### Começando oAgent BI Expert
+2025-10-19 11:13:03,802 - arruda_consulting - INFO - agent_bi_expert_node:382 - 
+### Solicitação de Visualização:
+Os dados retornados pela consulta estão vazios, ou seja, não há informações disponíveis sobre as novidades da Netflix no momento. Recomendo exibir uma mensagem informativa ao usuário: Não há dados disponíveis para visualização.
+2025-10-19 11:14:40,794 - arruda_consulting - INFO - agent_python_code_data_visualization_generator_node:388 - 
+### Python Data visualization code
+2025-10-19 11:16:59,788 - arruda_consulting - INFO - agent_python_code_data_visualization_generator_node:388 - 
+### Python Data visualization code
+2025-10-19 11:17:04,949 - arruda_consulting - INFO - agent_python_code_data_visualization_generator_node:399 - 
+### Código de Visualização Gerado:
+Não há dados disponíveis no dataframe de exemplo para gerar a visualização solicitada. Portanto, o resultado é uma mensagem informando a ausência de dados.
+2025-10-19 11:20:15,497 - arruda_consulting - INFO - agent_python_code_data_visualization_validator_node:409 - 
+### Validador de Código de Visualização
+2025-10-19 11:20:15,499 - arruda_consulting - ERROR - agent_python_code_data_visualization_validator_node:432 - ❌ Erro na validação do código: DataFrame vazio ou código de visualização ausente. Não é possível validar.
+2025-10-19 11:20:15,501 - arruda_consulting - INFO - agent_python_code_data_visualization_validator_node:440 - 
+🔄 Tentando corrigir o código...
+2025-10-19 11:21:27,592 - arruda_consulting - INFO - agent_python_code_data_visualization_validator_node:410 - 
+### Validador de Código de Visualização
+2025-10-19 11:21:27,592 - arruda_consulting - ERROR - agent_python_code_data_visualization_validator_node:433 - ❌ Erro na validação do código: DataFrame vazio ou código de visualização ausente. Não é possível validar.
+2025-10-19 11:21:27,592 - arruda_consulting - INFO - agent_python_code_data_visualization_validator_node:441 - 
+🔄 Tentando corrigir o código...
+2025-10-19 11:22:58,325 - arruda_consulting - INFO - agent_python_code_data_visualization_validator_node:410 - 
+### Validador de Código de Visualização
+2025-10-19 11:22:58,325 - arruda_consulting - ERROR - agent_python_code_data_visualization_validator_node:433 - ❌ Erro na validação do código: DataFrame vazio ou código de visualização ausente. Não é possível validar.
+2025-10-19 11:22:58,325 - arruda_consulting - INFO - agent_python_code_data_visualization_validator_node:441 - 
+🔄 Tentando corrigir o código...
+2025-10-19 11:23:00,926 - arruda_consulting - INFO - agent_python_code_data_visualization_validator_node:449 - 
+ Código ajustado:
+ explain='O código original não possui visualização nem dados para corrigir. Nenhuma ação possível.' python_code_data_visualization="print('DataFrame vazio ou código de visualização ausente. Não é possível validar.')"
+2025-10-19 11:25:14,995 - arruda_consulting - INFO - agent_python_code_data_visualization_validator_node:410 - 
+### Validador de Código de Visualização
+2025-10-19 11:25:14,995 - arruda_consulting - ERROR - agent_python_code_data_visualization_validator_node:433 - ❌ Erro na validação do código: DataFrame vazio ou código de visualização ausente. Não é possível validar.
+2025-10-19 11:25:14,995 - arruda_consulting - INFO - agent_python_code_data_visualization_validator_node:441 - 
+🔄 Tentando corrigir o código...
+2025-10-19 11:25:17,789 - arruda_consulting - INFO - agent_python_code_data_visualization_validator_node:449 - 
+ Código ajustado:
+ explain='O código original não possui visualização nem dados para corrigir. Nenhuma ação possível.' python_code_data_visualization="print('DataFrame vazio ou código de visualização ausente. Não é possível validar.')"
+2025-10-19 11:26:28,222 - arruda_consulting - INFO - supervisor_agent_node:135 - 
+### Agente Supervisor
+2025-10-19 11:26:29,535 - arruda_consulting - INFO - supervisor_agent_node:150 - Pergunta do usuário: Quais são as novidades da Netflix?
+2025-10-19 11:26:31,111 - arruda_consulting - INFO - supervisor_agent_node:172 - Resposta do LLM: response='As novidades da Netflix podem incluir lançamentos de filmes, séries, documentários e atualizações na plataforma. Para obter informações detalhadas sobre os lançamentos mais recentes ou novidades específicas, por favor, especifique se deseja saber sobre algum gênero, país ou período específico.' next_step='END'
+2025-10-19 11:27:18,582 - arruda_consulting - INFO - agent_sql_writer_node:254 - ### Chamando o Agente SQL Writer
+2025-10-19 11:27:21,288 - arruda_consulting - INFO - agent_sql_writer_node:275 - Resposta do LLM: Para responder à pergunta 'Quais são as novidades da Netflix?', precisamos listar os títulos que foram recentemente adicionados ao catálogo. Utilizaremos a coluna 'date_added' para identificar os títulos mais novos. A consulta seleciona os campos principais ('title', 'type', 'date_added', 'release_year', 'country', 'rating', 'duration') e ordena os resultados pela data de adição em ordem decrescente, mostrando primeiro os títulos mais recentes.
+2025-10-19 11:27:21,288 - arruda_consulting - INFO - agent_sql_writer_node:276 - Query gerada:
+SELECT title, type, date_added, release_year, country, rating, duration
+FROM table
+WHERE date_added IS NOT NULL
+ORDER BY date_added DESC
+LIMIT 20;
+2025-10-19 11:27:21,288 - arruda_consulting - INFO - agent_sql_validator_node:293 - ### Começando o Agente SQL Validator
+2025-10-19 11:27:21,288 - arruda_consulting - INFO - agent_sql_validator_node:302 - 🔍 Validando query com EXPLAIN...
+2025-10-19 11:27:42,363 - arruda_consulting - INFO - agent_sql_validator_node:306 - EXPLAIN resultado: ("Erro ao buscar informações da tabela: 2003 (HY000): Can't connect to MySQL server on 'serverunimetal.mysql.database.azure.com:3306' (10060)", None)
+2025-10-19 11:28:03,437 - arruda_consulting - ERROR - agent_sql_validator_node:336 - ❌ Erro na validação da query: 2003 (HY000): Can't connect to MySQL server on 'serverunimetal.mysql.database.azure.com:3306' (10060)
+2025-10-19 11:28:03,437 - arruda_consulting - INFO - agent_sql_validator_node:343 - 
+🔄 Tentando corrigir a query...
+2025-10-19 11:28:06,221 - arruda_consulting - INFO - agent_sql_validator_node:356 - 
+📝 Query ajustada:
+SELECT TOP 20 title, type, date_added, release_year, country, rating, duration
+FROM NetflixTitles
+WHERE date_added IS NOT NULL
+ORDER BY date_added DESC;
+2025-10-19 11:28:06,221 - arruda_consulting - INFO - agent_bi_expert_node:366 - ### Começando oAgent BI Expert
+2025-10-19 11:28:08,395 - arruda_consulting - INFO - agent_bi_expert_node:383 - 
+### Solicitação de Visualização:
+Os dados retornados pela consulta estão vazios, ou seja, não há títulos recentemente adicionados à Netflix disponíveis para visualização no momento. Recomendo exibir uma mensagem informativa: Não há dados disponíveis para visualização das novidades da Netflix.
+2025-10-19 11:28:08,395 - arruda_consulting - INFO - agent_python_code_data_visualization_generator_node:389 - 
+### Python Data visualization code
+2025-10-19 11:28:10,326 - arruda_consulting - INFO - agent_python_code_data_visualization_generator_node:400 - 
+### Código de Visualização Gerado:
+Como o dataframe está vazio e não há dados disponíveis para visualização das novidades da Netflix, o código retorna uma mensagem informativa conforme solicitado.
+2025-10-19 11:28:10,326 - arruda_consulting - INFO - agent_python_code_data_visualization_validator_node:410 - 
+### Validador de Código de Visualização
+2025-10-19 11:28:10,342 - arruda_consulting - ERROR - agent_python_code_data_visualization_validator_node:433 - ❌ Erro na validação do código: DataFrame vazio ou código de visualização ausente. Não é possível validar.
+2025-10-19 11:28:10,342 - arruda_consulting - INFO - agent_python_code_data_visualization_validator_node:441 - 
+🔄 Tentando corrigir o código...
+2025-10-19 11:28:12,293 - arruda_consulting - INFO - agent_python_code_data_visualization_validator_node:449 - 
+ Código ajustado:
+ explain='O DataFrame está vazio, então o código retorna uma mensagem informativa.' python_code_data_visualization="print('Não há dados disponíveis para visualização das novidades da Netflix.')"
+2025-10-19 11:30:45,559 - arruda_consulting - INFO - supervisor_agent_node:135 - 
+### Agente Supervisor
+2025-10-19 11:30:45,559 - arruda_consulting - INFO - supervisor_agent_node:192 - >>> Supervisor: Modo de Resposta Final
+2025-10-19 11:30:48,652 - arruda_consulting - INFO - supervisor_agent_node:206 - Olá! No momento, não há dados disponíveis sobre as novidades da Netflix para apresentar um relatório detalhado. Caso precise de informações específicas sobre lançamentos, tendências de audiência ou desempenho comercial da plataforma, por favor, especifique sua solicitação para que possamos buscar dados relevantes. 😉
+2025-10-19 11:40:53,431 - arruda_consulting - INFO - supervisor_agent_node:137 - 
+### Agente Supervisor
+2025-10-19 11:40:53,435 - arruda_consulting - INFO - supervisor_agent_node:194 - >>> Supervisor: Modo de Resposta Final
+2025-10-19 11:41:00,221 - arruda_consulting - INFO - supervisor_agent_node:208 - Olá! No momento, não há dados disponíveis sobre as novidades da Netflix para apresentar um relatório detalhado. Caso precise de informações específicas sobre lançamentos, tendências de audiência ou desempenho comercial da plataforma, por favor, especifique sua solicitação para que possamos buscar dados relevantes. 📊
+2025-10-19 11:41:47,014 - arruda_consulting - INFO - supervisor_agent_node:137 - 
+### Agente Supervisor
+2025-10-19 11:41:48,328 - arruda_consulting - INFO - supervisor_agent_node:152 - Pergunta do usuário: Quais são as novidades da Netflix?
+2025-10-19 11:42:37,587 - root - INFO - connect:41 - 🔍 Ambiente detectado: local
+2025-10-19 11:42:37,588 - root - INFO - _connect_local:77 - 🔄 Conectando ao Redis LOCAL em localhost:6379...
+2025-10-19 11:42:55,157 - root - ERROR - connect:63 - ❌ Erro inesperado ao conectar ao Redis: Timeout connecting to server
+2025-10-19 11:47:46,220 - arruda_consulting - INFO - supervisor_agent_node:137 - 
+### Agente Supervisor
+2025-10-19 11:47:47,683 - arruda_consulting - INFO - supervisor_agent_node:152 - Pergunta do usuário: Quais são as novidades da Netflix?
+2025-10-19 11:47:49,417 - arruda_consulting - INFO - supervisor_agent_node:174 - Resposta do LLM: response='As novidades da Netflix podem incluir novos lançamentos de filmes, séries, documentários e atualizações na plataforma. Para informações detalhadas sobre os lançamentos mais recentes ou novidades específicas, por favor, especifique se deseja saber sobre algum gênero, país ou período específico.' next_step='END'
+2025-10-19 11:48:35,979 - root - INFO - connect:41 - 🔍 Ambiente detectado: local
+2025-10-19 11:48:35,979 - root - INFO - _connect_local:77 - 🔄 Conectando ao Redis LOCAL em localhost:6379...
+2025-10-19 11:48:57,866 - root - ERROR - connect:63 - ❌ Erro inesperado ao conectar ao Redis: Timeout connecting to server
+2025-10-19 11:54:55,937 - arruda_consulting - INFO - supervisor_agent_node:142 - 
+### Agente Supervisor
+2025-10-19 11:54:57,375 - arruda_consulting - INFO - supervisor_agent_node:157 - Pergunta do usuário: Quais são as novidades da Netflix?
+2025-10-19 11:54:59,116 - arruda_consulting - INFO - agent_tools_node:230 - ### Agent Tools
+2025-10-19 11:55:03,885 - arruda_consulting - INFO - agent_tools_node:247 - As novidades da Netflix incluem lançamentos de filmes, séries, documentários e atualizações na plataforma. Algumas das novidades recentes incluem:
+
+* Sonic, o Ouriço (Sonic the Hedgehog) - 1 de outubro
+* Mistério (Vicky and Her Mystery) - 1 de outubro
+* O Natal Extraordinário de Zoey (Zoey's Extraordinary Christmas) - 1 de outubro
+* Monstro: A História de Ed Gein
+* Néro
+* Boots
+* Desobedientes
+* Ninguém nos Viu Partir
+* O Refúgio Atômico
+
+Essas são apenas algumas das novidades que você pode encontrar na Netflix. Para obter mais informações, você pode visitar os sites:
+
+* https://www.sortiraparis.com/pt/o-que-fazer-em-paris/cinema-serie/guides/231264-novos-lancamentos-de-outubro-do-netflix
+* https://www.adorocinema.com/streaming/netflix/series/originals/novas/
+* https://olhardigital.com.br/2025/10/13/cinema-e-streaming/netflix-lancamentos-da-semana-13-a-19-de-outubro/
+
+Lembre-se de que as novidades da Netflix estão sempre mudando, então é sempre uma boa ideia verificar os sites oficiais ou as redes sociais para obter as informações mais atualizadas.
+2025-10-19 11:55:03,885 - arruda_consulting - INFO - search_tables_and_schemas:33 - Buscando tabelas, esquemas e colunas no MySql...
+2025-10-19 11:55:46,187 - root - INFO - connect:41 - 🔍 Ambiente detectado: local
+2025-10-19 11:55:46,190 - root - INFO - _connect_local:77 - 🔄 Conectando ao Redis LOCAL em localhost:6379...
+2025-10-19 11:56:15,312 - root - ERROR - connect:63 - ❌ Erro inesperado ao conectar ao Redis: Timeout connecting to server
+2025-10-19 11:56:15,312 - arruda_consulting - ERROR - redis_with_cache:68 - ❌ Falha na conexão com o Redis. A cache está indisponível.

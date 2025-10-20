@@ -4,6 +4,7 @@ from dotenv import load_dotenv
 import os
 from typing import Optional
 import logging
+from redisvl.utils.vectorize import AzureOpenAITextVectorizer
 
 load_dotenv()
 
@@ -32,6 +33,20 @@ class AzureChatHandler:
             model="o3-mini",
             api_version=os.getenv("AZURE_OPENAI_API_VERSION_O3"),
         )
+
+def embeddings_model() -> AzureOpenAITextVectorizer:
+
+    api_key=os.getenv("AZURE_OPENAI_EMBEDDINGS")
+    endpoint=os.getenv("AZURE_EMBEDDINGS_ENDPOINT")
+    api_version=os.getenv("OPENAI_API_VERSION")
+
+    return AzureOpenAITextVectorizer(
+        api_key=api_key,
+        endpoint=endpoint,
+        api_version=api_version,
+    )
+
+
 
 if __name__ == "__main__":
     # python -m src.infrastructure.llm_providers.azure.client

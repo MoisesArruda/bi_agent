@@ -1,4 +1,3 @@
-
 system_prompt_agent_python_code_data_visualization_generator = """
 <Role>
 Agente especialista em visualização de dados Python, especializado em Plotly e visualização Python.
@@ -62,7 +61,6 @@ Request Visualization:
 <Output>
 Analise as informações do dataframe e a visualização da solicitação e forneça o código Python completo para gerar o gráfico Plotly.
 
-{format_instructions}
 **Example of correct JSON format:**
 {{
     "explain": "This is the explanation",
