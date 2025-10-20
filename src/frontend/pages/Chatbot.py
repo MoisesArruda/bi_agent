@@ -1,6 +1,5 @@
 import streamlit as st
 import os, sys
-import logging
 import uuid
 import plotly.io as pio
 import pandas as pd
@@ -11,8 +10,11 @@ import plotly.graph_objects as go
 import plotly.express as px
 import matplotlib.pyplot as plt
 import plotly
+from logs.logs_ import logging_
+from datetime import datetime
+import time
 
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logger = logging_()
 
 project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
 sys.path.append(project_root)
@@ -25,19 +27,70 @@ dataset_path = os.path.join(project_root, "data", "dataset", "netflix_movies_and
 
 
 def initialize_session_state():
-    """Inicialização mínima necessária"""
+    """
+    Inicialização mínima necessária
+    """
+
     if "messages" not in st.session_state:
         st.session_state.messages = [
-            {"role": "assistant", "content": "Olá! Sou sua assistente para análise de dados. Como posso te ajudar hoje?"}
+            {"role": "assistant", "content": "Olá! Sou um assistente para análise de dados. Como posso te ajudar hoje?"}
         ]
+
+    # ✅ Thread ID único POR SESSÃO (persiste entre perguntas)
+    if "thread_id" not in st.session_state:
+        st.session_state.thread_id = f"user_{uuid.uuid4()}"
+    
+    # ✅ Contador de interações (evita cache)
+    if "interaction_count" not in st.session_state:
+        st.session_state.interaction_count = 0
 
 def execute_workflow(prompt: str) -> Dict[str, Any]:
     """Executa o workflow e retorna o estado final"""
 
-    unique_thread_id = str(uuid.uuid4())
-    app = create_workflow()
-    config = {"configurable": {"thread_id": unique_thread_id}}
-    return app.invoke({"question": prompt}, config=config)
+    # Usar thread_id do session_state ou criar um único
+    st.session_state.interaction_count += 1
+    graph = create_workflow()
+    config = {
+        "configurable": {
+            "thread_id": st.session_state.thread_id,
+            "interaction_id": st.session_state.interaction_count,
+            "timestamp": datetime.now().isoformat()
+        }
+    }
+
+    initial_state = {
+        "question": prompt,
+        # ✅ Campos de memória (persistem entre perguntas)
+        "conversation_history": st.session_state.get("conversation_history", []),
+        "last_questions": st.session_state.get("last_questions", []),
+        "python_code_data_visualization": None,
+        "python_code_validated": False,
+        "df_data": [],
+        "df_columns": [],
+        "df_shape": (0, 0),
+        "df_dtypes": {},
+        "visualization_request": None,
+        "visualization_elements": [],
+        "query": None,
+        "explanation_query": None,
+        "result_debug_bi": False,
+        "result_debug_sql": None,
+        "result_debug_python_code_data_visualization": None,
+        "error_msg_debug_sql": None,
+        "error_msg_debug_python_code_data_visualization": None,
+        "num_retries_debug_sql": 0,
+        "num_retries_debug_python_code_data_visualization": 0
+    }
+
+    result = graph.invoke(initial_state, config=config)
+    
+    # Atualizar memória no session_state
+    if "conversation_history" in result:
+        st.session_state.conversation_history = result["conversation_history"]
+    if "last_questions" in result:
+        st.session_state.last_questions = result["last_questions"]
+    
+    return result
 
 def process_visualization_data(viz_data: Dict[str, Any]) -> tuple:
     """Processa dados de visualização e retorna fig, df_viz, df_viz_dict"""
@@ -79,7 +132,8 @@ def render_chat_message(message: Dict[str, Any]):
             
             # Renderiza query SQL se existir
         if "sql_query" in message and message["sql_query"]:
-            st.code(body=message["sql_query"], language="sql")
+            with st.expander("Query SQL", icon="🔍"):
+                st.code(body=message["sql_query"], language="sql")
 
 
 def handle_bot_response(prompt: str):
@@ -96,8 +150,12 @@ def handle_bot_response(prompt: str):
     # Processa com LangGraph e exibe a resposta em tempo real
     with st.chat_message("assistant"):
         with st.spinner('Analisando sua solicitação... Por favor, aguarde.'):
+            start_time = time.time()
             # Executa o workflow
             final_state = execute_workflow(prompt)
+
+            end_time = time.time()
+            processing_time = end_time - start_time
 
             # Processa a resposta de texto
             messages_list = final_state.get("messages", [])
@@ -113,8 +171,9 @@ def handle_bot_response(prompt: str):
 
             st.markdown(final_message)
             
-            # Processa visualizações (nova abordagem)
+            # VERIFICAR SE HÁ VISUALIZAÇÕES
             visualization_elements = []
+            sql_query = final_state.get("query", None)
             if "python_code_data_visualization" in final_state and final_state.get("python_code_validated"):
                 try:
                     # Reconstrói DataFrame do estado
@@ -146,13 +205,19 @@ def handle_bot_response(prompt: str):
                 elif element["type"] == "dataframe":
                     df = pd.DataFrame(element["data"], columns=element["columns"])
                     st.dataframe(df)
-            
+
             # Mostra query SQL se existir
-            sql_query = final_state.get("query", None)
-            if sql_query:
-                st.code(body=sql_query, language="sql")
-                st.code(body=final_state.get("python_code_data_visualization"), language="python")
-                st.write("Raciocionio da query:" + final_state.get("explanation_query"))
+            else:
+                if sql_query:
+                    with st.expander("Query SQL", icon="🔍"):
+                        st.code(body=sql_query, language="sql")
+                        if final_state.get("explanation_query"):
+                            st.write("Raciocionio da query:" + final_state.get("explanation_query"))
+                    if final_state.get("python_code_data_visualization"):
+                        with st.expander("Código Python", icon="🐍"):
+                            st.code(body=final_state.get("python_code_data_visualization"), language="python")
+
+            st.toast(f"Tempo de processamento: {processing_time:.2f} segundos")
 
             # Salva a resposta completa do assistente no histórico (simplificado)
             assistant_message = {
@@ -180,6 +245,13 @@ def render_header():
     """, unsafe_allow_html=True)
     st.markdown("<h1 style='text-align: center;'>📊 Gerador de Relatórios Inteligente com IA</h1>", unsafe_allow_html=True)
     st.markdown("<div style='margin-top: 50px;'></div>", unsafe_allow_html=True)
+
+
+def render_chat_history():
+
+    """Renderiza todas as mensagens do histórico, exceto a última do assistente."""
+    for message in st.session_state.messages:
+        render_chat_message(message)
 
 def render_dataset_preview():
     """Container dedicado para visualizar o dataset"""
@@ -222,42 +294,46 @@ def render_question_buttons():
                             st.info("Processando... Vá até o final da página para ver a resposta.")
 
                             st.rerun()
-                            
-def render_chat_history():
-
-    """Renderiza todas as mensagens do histórico, exceto a última do assistente."""
-    # A lógica de renderizar a última mensagem já está em handle_bot_response
-    for message in st.session_state.messages:
-        render_chat_message(message)
 
 def main_app():
     """Função principal que organiza e executa a aplicação."""
 
-    # 1. Inicialização
-    configure_page(layout="wide")
-    initialize_session_state()
-    configure_sidebar_with_button()
-    remove_sidebar_navigation()
+    try:
+        # 1. Inicialização
+        configure_page(layout="wide")
+        initialize_session_state()
+        configure_sidebar_with_button()
+        remove_sidebar_navigation()
+    except Exception as e:
+        logger.error(f"Erro ao inicializar a aplicação: {e}")
+        st.error(f"Erro ao inicializar a aplicação: {e}")
+        st.stop()
 
+    try:
     # 2. Renderiza a UI estática
-    st.markdown("<div style='margin-top: 90px;'></div>", unsafe_allow_html=True)
-    render_header()
-    st.markdown("<div style='margin-top: 40px;'></div>", unsafe_allow_html=True)
-    render_dataset_preview()
-    render_question_buttons()
+        st.markdown("<div style='margin-top: 90px;'></div>", unsafe_allow_html=True)
+        render_header()
+        st.markdown("<div style='margin-top: 40px;'></div>", unsafe_allow_html=True)
+        render_dataset_preview()
+        render_question_buttons()
 
-    # 3. Renderiza a UI dinâmica (histórico do chat)
-    st.markdown("<div style='margin-top: 200px;'></div>", unsafe_allow_html=True)
-    render_chat_history()
+        # 3. Renderiza a UI dinâmica (histórico do chat)
+        st.markdown("<div style='margin-top: 200px;'></div>", unsafe_allow_html=True)
+        render_chat_history()
 
-    if "pending_prompt" in st.session_state:
-        prompt = st.session_state.pop("pending_prompt")
-        handle_bot_response(prompt)
-    
+        if "pending_prompt" in st.session_state:
+            prompt = st.session_state.pop("pending_prompt")
+            handle_bot_response(prompt)
+        
 
-    # 4. Lida com a nova entrada do usuário
-    if prompt := st.chat_input("Digite sua mensagem aqui..."):
-        handle_bot_response(prompt)
+        # 4. Lida com a nova entrada do usuário
+        if prompt := st.chat_input("Digite sua mensagem aqui..."):
+            handle_bot_response(prompt)
+
+    except Exception as e:
+        logger.error(f"Erro ao renderizar a UI: {e}")
+        st.error(f"Erro ao renderizar a UI: {e}")
+        st.stop()
     
 if __name__ == "__main__":
     # streamlit run src/frontend/pages/Chatbot.py

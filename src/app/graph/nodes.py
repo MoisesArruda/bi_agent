@@ -3,6 +3,7 @@ import datetime
 import pandas as pd
 import plotly
 import plotly.graph_objects as go
+from langgraph.graph import END
 import plotly.express as px
 import matplotlib.pyplot as plt
 from src.app.graph.constants import AgentState, SQLQueryResponse, PythonCodeDataVisualizationResponse, SupervisorAgentResponse, AgentBiExpertResponse, ReactAgentResponse
@@ -25,6 +26,7 @@ from redisvl.extensions.cache.llm import SemanticCache
 from logs.logs_ import logging_
 from src.infrastructure.llm_providers.azure.client import embeddings_model
 from src.infrastructure.llm_providers.llm_fabric import create_chain
+
 logger = logging_()
 
 MAX_ERROR_CHARS = 300
@@ -38,24 +40,35 @@ def search_tables_and_schemas(state: AgentState) -> AgentState:
 
     # schemas_and_table, columns = get_postgres_table_info(DB_NAME)
     for attempt in range(2):
-        schemas_and_table, columns = db.get_table_info(DB_NAME)
-    
-        if schemas_and_table is not None:
-        # print(schemas_and_table)
-        # print(columns)
-            state["database_schemas"] = schemas_and_table
-            state["columns"] = columns
-            state["next_step"] = "redis_with_cache"
-        
-        else:
 
-            logger.error(f"Erro na tentativa {attempt + 1}")
+        try:
+            schemas_and_table, columns = db.get_table_info(DB_NAME)
+        
+            if schemas_and_table is not None:
+                logger.info((f"✅ Conexão bem-sucedida com o MySql"))
+            # print(schemas_and_table)
+            # print(columns)
+                state["database_schemas"] = schemas_and_table
+                state["columns"] = columns
+                state["next_step"] = "redis_with_cache"
+
+                return state
+        
+            else:
+
+                logger.error(f"Erro na tentativa {attempt + 1}")
+ 
+
+        except Exception as e:
+            logger.error(f"Erro na tentativa {attempt + 1}: {e}")
+            
             if attempt == 0:
                 time.sleep(1)
-            if attempt == 1:
-                logger.error("Falha após 2 tentativas, enviando para o usuário")
-            state["messages"] = [AIMessage(content="Erro ao acessar o banco de dados. Por favor, tente novamente mais tarde")]
-            state["next_step"] = "END"
+
+
+    logger.error("Falha após 2 tentativas, enviando para o usuário")
+    state["messages"] = [AIMessage(content="Erro ao acessar o banco de dados. Por favor, tente novamente mais tarde")]
+    state["next_step"] = END
             
     return state
 
@@ -141,7 +154,7 @@ def redis_with_cache(state: AgentState) -> AgentState:
 
 def supervisor_agent_node(state: AgentState) -> AgentState:
     
-    logger.info("\n### Agente Supervisor")
+    logger.info("\n###Agente Supervisor")
 
     memory_context = build_memory_context(state)
     state["memory_context"] = memory_context

@@ -3,7 +3,7 @@ system_prompt_agent_sql_writer= """
 # Você é um desenvolvedor SQL MySql experiente com profundo conhecimento de sistemas de banco de dados, otimização de consultas e manipulação de dados. Sua tarefa é gerar consultas SQL precisas, eficientes e bem estruturadas com base nos requisitos fornecidos. Siga estas diretrizes:
 </Função>
 
-<Tasks>
+<Tarefas>
 1. **Entenda o Contexto**: Analise cuidadosamente a solicitação do usuário.
 <Pergunta do usuário>
 {question}
@@ -41,7 +41,8 @@ system_prompt_agent_sql_writer= """
 - Sempre trate possíveis divisões por zero usando NULLIF ou CASE WHEN.
 </Orientações>
 
-5. **Forneça a saída**: Retorne a consulta SQL em um formato legível. Use recuo e formatação consistentes.
+7. **Forneça a saída**: Retorne a consulta SQL em um formato legível. Use recuo e formatação consistentes.
+</Tarefas>
 
 <Raciocínio>
 - Analise a pergunta do usuário e o dicionário de dados.
