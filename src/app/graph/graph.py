@@ -10,6 +10,7 @@ def create_workflow(memory: BaseCheckpointSaver = MemorySaver()):
     workflow = StateGraph(AgentState)
 
     # Adicionar nós
+    workflow.add_node("Guardrails", guardrails_node)
     workflow.add_node("Supervisor_Agent", supervisor_agent_node)
     workflow.add_node("Search_Tables_and_Schemas", search_tables_and_schemas)
     workflow.add_node("Redis_With_Cache", redis_with_cache)
@@ -20,7 +21,8 @@ def create_workflow(memory: BaseCheckpointSaver = MemorySaver()):
     workflow.add_node("Agent_Python_Validator", agent_python_code_data_visualization_validator_node)
 
     # Adicionar edges simples
-    workflow.add_edge(START, "Supervisor_Agent")
+    workflow.add_edge(START, "Guardrails")
+    workflow.add_edge("Guardrails", "Supervisor_Agent")
 
     workflow.add_conditional_edges(
         'Supervisor_Agent',

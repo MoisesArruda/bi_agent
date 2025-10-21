@@ -21,6 +21,7 @@ sys.path.append(project_root)
 
 from src.frontend.page_config import remove_sidebar_navigation, configure_page, configure_sidebar_with_button
 from src.app.graph.graph import create_workflow
+from src.frontend.utils.utils import save_messages
 
 image_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "img", 'ArrudaConsulting.jpeg')
 dataset_path = os.path.join(project_root, "data", "dataset", "netflix_movies_and_tv_shows.csv")
@@ -229,6 +230,7 @@ def handle_bot_response(prompt: str):
             }
 
             st.session_state.messages.append(assistant_message)
+            save_messages(st.session_state.messages, "messages.csv")
 
 
 def render_header():

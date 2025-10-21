@@ -31,6 +31,81 @@ logger = logging_()
 
 MAX_ERROR_CHARS = 300
 
+def guardrails_node(state: AgentState) -> AgentState:
+    """
+    Node de guardrails que verifica palavras bloqueadas na pergunta do usuário.
+    Bloqueia operações perigosas como DELETE, UPDATE, INSERT, DROP, etc.
+    """
+    logger.info("\n### Guardrails - Verificando Segurança")
+    
+    user_question = state.get("question", "").upper()
+    
+    # Lista de palavras/frases bloqueadas (case-insensitive)
+    blocked_keywords = [
+        "DELETE", "UPDATE", "INSERT", "DROP", "ALTER", "TRUNCATE","CREATE"
+        ]
+    
+    # Frases específicas bloqueadas
+    blocked_phrases = [
+        "DROP TABLE", "DROP DATABASE", "DELETE FROM", "UPDATE SET",
+        "INSERT INTO", "ALTER TABLE", "TRUNCATE TABLE",
+        "CREATE TABLE", "CREATE DATABASE", "GRANT ALL",
+        "EXECUTE", "CALL PROCEDURE", "BACKUP DATABASE"
+    ]
+    
+    # Verificar palavras bloqueadas
+    blocked_words_found = []
+    for keyword in blocked_keywords:
+        if keyword in user_question:
+            blocked_words_found.append(keyword)
+    
+    # Verificar frases bloqueadas
+    blocked_phrases_found = []
+    for phrase in blocked_phrases:
+        if phrase in user_question:
+            blocked_phrases_found.append(phrase)
+    
+    # Se encontrou palavras/frases bloqueadas
+    if blocked_words_found or blocked_phrases_found:
+        logger.warning(f"🚫 Guardrails: Operação bloqueada detectada!")
+        logger.warning(f"Palavras bloqueadas encontradas: {blocked_words_found}")
+        logger.warning(f"Frases bloqueadas encontradas: {blocked_phrases_found}")
+        
+        # Mensagem de erro para o usuário
+        error_message = f"""
+🚫 **Operação Bloqueada por Segurança**
+
+Detectamos que sua pergunta contém operações que podem ser perigosas para o banco de dados:
+
+**Palavras bloqueadas encontradas:** {', '.join(blocked_words_found)}
+**Frases bloqueadas encontradas:** {', '.join(blocked_phrases_found)}
+
+**Por favor, reformule sua pergunta para usar apenas operações de consulta (SELECT).**
+
+**Operações permitidas:**
+- ✅ SELECT (consultas)
+- ✅ JOIN (junções)
+- ✅ WHERE (filtros)
+- ✅ GROUP BY (agrupamentos)
+- ✅ ORDER BY (ordenação)
+- ✅ Funções de agregação (COUNT, SUM, AVG, etc.)
+
+**Operações bloqueadas:**
+- ❌ DELETE, UPDATE, INSERT
+- ❌ DROP, ALTER, TRUNCATE
+- ❌ CREATE, GRANT, REVOKE
+- ❌ EXEC, EXECUTE, CALL
+        """
+        
+        state["messages"] = [AIMessage(content=error_message)]
+        state["next_step"] = END
+        return state
+    
+    # Se passou na verificação, continua o fluxo
+    logger.info("✅ Guardrails: Pergunta aprovada - sem operações perigosas")
+    state["next_step"] = "search_tables_and_schemas"
+    return state
+
 def search_tables_and_schemas(state: AgentState) -> AgentState:
     logger.info("Buscando tabelas, esquemas e colunas no MySql...")
 
