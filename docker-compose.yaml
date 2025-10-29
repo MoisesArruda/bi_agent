@@ -2,16 +2,13 @@
 version: '3.8'
 
 services:
-  # Serviço da sua aplicação backend
-  backend:
-    # Construa a imagem a partir do Dockerfile na pasta atual
+
+  frontend:
     build: .
-    # Mapeia a porta do container para a porta do host
+
     ports:
       - "8501:8501"
-    # Define variáveis de ambiente (opcional)
     environment:
-      # O nome do host do Redis é o nome do serviço
     #   REDIS_HOST: redis
     #   REDIS_PORT: 6379
     #   # Configurações do PostgreSQL
@@ -25,36 +22,32 @@ services:
     #   - redis
     #   - postgres
 
-  # Serviço do Redis
+
   redis:
-    # Usa a imagem oficial do Redis
+
     image: "redis:latest"
-    # Mapeia a porta do container para a porta do host
+
     ports:
       - "6379:6379"
-    # Usa um volume para persistir os dados do Redis (opcional)
+
     volumes:
       - redis-data:/data
 
-  # Serviço do PostgreSQL
+
   postgres:
-    # Usa a imagem oficial do PostgreSQL
+
     image: "postgres:15"
-    # Mapeia a porta do container para a porta do host
+
     ports:
       - "5432:5432"
-    # Define variáveis de ambiente para o PostgreSQL
     environment:
       POSTGRES_DB: bi_agent_db
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres123
-    # Usa um volume para persistir os dados do PostgreSQL
     volumes:
       - postgres-data:/var/lib/postgresql/data
-    # Define o comando para inicializar o banco
     command: postgres -c log_statement=all
 
-# Define o volume para persistência de dados
 volumes:
   redis-data:
   postgres-data:
