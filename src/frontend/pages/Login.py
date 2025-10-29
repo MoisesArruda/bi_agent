@@ -44,25 +44,24 @@ def config_login_page():
             st.markdown('<div class="logo-container">', unsafe_allow_html=True)
 
         try:
-
-            name = authenticator.login("Login", "main")
-            session_state = st.session_state
-            session_state.is_logged_in = False
-
-            if st.session_state["authentication_status"]:
-                session_state.is_logged_in = True
-                session_state.current_username = name
-                logging.info(f"Usuário {name} autenticado com sucesso.")
-                with st.spinner("Redirecionando para a página de chat..."):
-                    st.switch_page("pages/Chatbot.py")
-
-            elif st.session_state["authentication_status"] == False:
-                session_state.is_logged_in = False
-                st.error("Username/senha incorreto.")
-
-            elif st.session_state["authentication_status"] is None:
-                session_state.is_logged_in = False
-                st.warning("Digite seu usuário e senha.")
+            # Formulário de login personalizado com placeholders
+            with st.form("login_form"):
+                st.markdown("### Login")
+                username = st.text_input("Username", placeholder="admin")
+                password = st.text_input("Password", type="password", placeholder="123")
+                submitted = st.form_submit_button("Login")
+                
+                if submitted:
+                    # Verificar credenciais
+                    if username == "admin" and password == "123":
+                        session_state = st.session_state
+                        session_state.is_logged_in = True
+                        session_state.current_username = "admin"
+                        logging.info("Usuário admin autenticado com sucesso.")
+                        with st.spinner("Redirecionando para a página de chat..."):
+                            st.switch_page("pages/Chatbot.py")
+                    else:
+                        st.error("Username/senha incorreto.")
 
         except Exception as e:
             logging.error(f"Erro durante o login: {str(e)}")

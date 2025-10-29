@@ -10,14 +10,16 @@ import plotly.graph_objects as go
 import plotly.express as px
 import matplotlib.pyplot as plt
 import plotly
-from logs.logs_ import logging_
 from datetime import datetime
 import time
 
-logger = logging_()
-
+# Adicionar o diretório raiz ao path antes de importar logs
 project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
 sys.path.append(project_root)
+
+from logs.logs_ import logging_
+
+logger = logging_()
 
 from src.frontend.page_config import remove_sidebar_navigation, configure_page, configure_sidebar_with_button
 from src.app.graph.graph import create_workflow

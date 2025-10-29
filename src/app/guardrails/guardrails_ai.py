@@ -42,7 +42,7 @@ def validate_query_commands(text: str) -> bool:
 
 
 # Criando as validações
-@register_validator(name="query-unimetal-validator", data_type="string")
+@register_validator(name="query-validator", data_type="string")
 class QueryValidator(Validator):
     "Validador que permite apenas tópicos permitidos"
 

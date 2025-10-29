@@ -1,14 +1,10 @@
 cookie:
   expiry_days: 0
-  key: authentication-propostas-key
-  name: authentication-propostas
+  key: authentication-bi-agent-key
+  name: authentication-bi-agent
 credentials:
   usernames:
-    moises:
-      email: moises_arruda@outlook.com
-      name: moises
-      password: $2b$12$yXQrfrWIVHoDaeaATsywA.41A3n.YsCbeR4fT5sKIvBum5D7vzrre
-    moisesa:
-      email: moises@arruda.com
-      name: moisesA
-      password: $2b$12$7xBkogVXUNUQz1ZEdFqyi.dvZBNJLr.9s3vOcglwm/hcEC/8ENrTS
+    admin:
+      email: admin@admin.com
+      name: Administrador
+      password: $2b$12$EixZaYVK1fsbw1ZfbX3OXePaWxn96p36WQoeG6Lruj3vjPGga31lW
