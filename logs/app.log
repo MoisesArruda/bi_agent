@@ -832,3 +832,13 @@ O número de 360 filmes evidencia a forte presença dos Estados Unidos na indús
 - Avaliar o impacto desses lançamentos no catálogo da Netflix e no consumo dos usuários pode trazer insights adicionais sobre preferências de mercado.
 
 *Fonte: Base de dados Netflix, consulta realizada em 2025.*
+2025-10-29 03:33:55,030 - arruda_consulting - INFO - guardrails_node:39 - 
+### Guardrails - Verificando Segurança
+2025-10-29 03:33:55,031 - arruda_consulting - INFO - guardrails_node:105 - ✅ Guardrails: Pergunta aprovada - sem operações perigosas
+2025-10-29 03:33:55,033 - arruda_consulting - INFO - supervisor_agent_node:232 - 
+###Agente Supervisor
+2025-10-29 03:33:55,036 - root - WARNING - get_llm:47 - Erro ao carregar modelo 'None' com provedor 'azure': Missing credentials. Please pass one of `api_key`, `azure_ad_token`, `azure_ad_token_provider`, or the `AZURE_OPENAI_API_KEY` or `AZURE_OPENAI_AD_TOKEN` environment variables.
+2025-10-29 03:33:55,037 - root - INFO - get_llm:48 - Tentando fallback para Groq...
+2025-10-29 03:33:55,037 - root - ERROR - get_llm:54 - Falha no fallback para Groq: The api_key client option must be set either by passing api_key to the client or by setting the GROQ_API_KEY environment variable
+2025-10-29 03:33:55,038 - arruda_consulting - ERROR - supervisor_agent_node:280 - Erro no roteamento inicial do supervisor: Nenhum modelo pôde ser carregado.
+2025-10-29 03:33:55,044 - root - INFO - save_messages:45 - Dados salvos em messages.csv

@@ -6,7 +6,7 @@ sys.path.append(project_root)
 
 from src.frontend.page_config import remove_sidebar_navigation, configure_sidebar
 
-image_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "img", 'project.png')
+image_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "img", 'mermaid.png')
 
 
 def home_page():

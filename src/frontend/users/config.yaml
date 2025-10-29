@@ -8,3 +8,7 @@ credentials:
       email: moises_arruda@outlook.com
       name: moises
       password: $2b$12$yXQrfrWIVHoDaeaATsywA.41A3n.YsCbeR4fT5sKIvBum5D7vzrre
+    moisesa:
+      email: moises@arruda.com
+      name: moisesA
+      password: $2b$12$7xBkogVXUNUQz1ZEdFqyi.dvZBNJLr.9s3vOcglwm/hcEC/8ENrTS

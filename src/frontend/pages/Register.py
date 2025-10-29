@@ -42,7 +42,7 @@ def config_register_page():
 
     except Exception as e:
         logging.error(f"Erro durante o registro: {e}")
-        st.error("Por favor, preencha todos os campos.")
+        st.error(f"Erro durante o registro: {e}")
 
 if __name__ == "__main__":
     config_register_page()
